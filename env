@@ -1,0 +1,16 @@
+# Archivo .env — NO subas este archivo a Git
+# Agrega .env a tu .gitignore
+
+# Clave secreta para sesiones y cookies
+SECRET_KEY=pon-aqui-una-clave-muy-larga-y-aleatoria
+
+# Modo debug (0 = desactivado, 1 = activado)
+FLASK_DEBUG=1
+
+# Credenciales de Gmail
+MAIL_USERNAME=depositolosvelez@gmail.com
+MAIL_PASSWORD=rbtpivzbqsdpjalo
+
+# Credenciales del panel admin (cámbialas)
+ADMIN_USER=admin
+ADMIN_PASSWORD=deposito2025

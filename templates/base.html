@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Depósito Los Vélez</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-black sticky-top shadow-sm">
+    <div class="container">
+
+        <!-- LOGO -->
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{{ url_for('static', filename='img/logo_amarillo.png') }}" alt="Depósito Los Vélez" height="40" class="me-2">
+            <span class="fw-bold text-uppercase" style="letter-spacing:1px;">Depósito Los Vélez</span>
+        </a>
+
+        <!-- BOTÓN MÓVIL -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- MENÚ -->
+        <div class="collapse navbar-collapse justify-content-end" id="menu">
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/productos') %}active{% endif %}" href="/productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/contacto' %}active{% endif %}" href="/contacto">Contacto</a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="{% if request.path != '/' %}main-light{% endif %}">
+    {% block contenido %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-dark text-light text-center py-3">
+    <small>
+        © 2026 Depósito Los Vélez · Montería · Despachos a toda la región
+    </small>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Animaciones de tarjetas -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.card-animate');
+    cards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.15}s`;
+      card.classList.add('fade-in-up');
+    });
+  });
+</script>
+
+<!-- CHAT FLOTANTE WHATSAPP -->
+<a href="https://wa.me/573508494766?text=Hola!%20Quisiera%20consultar%20sobre%20sus%20materiales" 
+   target="_blank" 
+   id="whatsapp-chat" 
+   title="Chatear por WhatsApp">
+    <img src="{{ url_for('static', filename='img/whatsapp_icon.png') }}" alt="WhatsApp">
+</a>
+
+<style>
+    #whatsapp-chat {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 1000;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    #whatsapp-chat img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    #whatsapp-chat:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+</body>
+</html>
