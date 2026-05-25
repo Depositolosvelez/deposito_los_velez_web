@@ -1,6 +1,8 @@
 import csv
 import io
+from datetime import date
 from functools import wraps
+from urllib.parse import quote as url_quote
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
 from extensions import db
 from models import Cliente
@@ -121,6 +123,31 @@ def exportar():
         output.getvalue(),
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=clientes.csv"},
+    )
+
+
+def _wa_seguimiento_url(cliente):
+    if not cliente.telefono:
+        return None
+    tel  = cliente.telefono.replace(" ", "").replace("-", "")
+    prod = cliente.producto_interes or "nuestros productos"
+    msg  = f"Hola {cliente.nombre}, le contactamos del Depósito Los Vélez. ¿Sigue interesado en {prod}?"
+    return f"https://wa.me/57{tel}?text={url_quote(msg)}"
+
+
+@clientes_bp.route("/clientes/seguimiento")
+@login_requerido
+def seguimiento():
+    clientes = Cliente.query.filter(
+        Cliente.estado.in_(["Interesado", "Seguimiento"])
+    ).order_by(Cliente.fecha_registro.asc()).all()
+    hoy     = date.today()
+    wa_urls = {c.id: _wa_seguimiento_url(c) for c in clientes}
+    return render_template(
+        "admin/clientes/seguimiento.html",
+        clientes=clientes,
+        hoy=hoy,
+        wa_urls=wa_urls,
     )
 
 
