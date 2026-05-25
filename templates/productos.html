@@ -123,7 +123,11 @@
                         <!-- Precio -->
                         <p class="fw-bold mt-auto mb-1" style="color:#D4AF37; font-size:1.9rem; letter-spacing:-1px; line-height:1;">
                             ${{ "{:,.0f}".format(p.precio) }}
+                            {% if p.categoria == 'CABLES' %}
+                            <span class="fw-normal" style="color:#aaa; font-size:0.82rem; letter-spacing:0;"> COP / mt</span>
+                            {% else %}
                             <span class="fw-normal" style="color:#aaa; font-size:0.82rem; letter-spacing:0;"> COP</span>
+                            {% endif %}
                         </p>
                         <p style="color:#bbb; font-size:0.77rem; margin-bottom:0;">Precio negociable · Consulta disponibilidad</p>
                     </div>
