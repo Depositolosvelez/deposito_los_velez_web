@@ -75,7 +75,7 @@
                      onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 45px rgba(212,175,55,0.22)'; this.style.borderColor='#D4AF37';"
                      onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.07)'; this.style.borderColor='#ebebeb';">
 
-                    <!-- Imagen -->
+                    <!-- Imagen del producto -->
                     <div style="height:230px; overflow:hidden; position:relative; background:#f0f0f0;">
                         {% if p.foto %}
                         <img src="{{ url_for('static', filename='img/productos/' ~ p.foto) }}"
