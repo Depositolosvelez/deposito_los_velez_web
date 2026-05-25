@@ -44,7 +44,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path.startswith('/admin/clientes') and not request.path.startswith('/admin/clientes/seguimiento') %}active{% endif %}"
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes') and not request.path.startswith('/admin/clientes/seguimiento') and not request.path.startswith('/admin/clientes/estadisticas') %}active{% endif %}"
                        href="{{ url_for('clientes.lista') }}">
                         <i class="bi bi-people me-1"></i>Clientes
                     </a>
@@ -53,6 +53,12 @@
                     <a class="nav-link {% if request.path.startswith('/admin/clientes/seguimiento') %}active{% endif %}"
                        href="{{ url_for('clientes.seguimiento') }}">
                         🔥 Seguimiento
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes/estadisticas') %}active{% endif %}"
+                       href="{{ url_for('clientes.estadisticas') }}">
+                        📊 Stats
                     </a>
                 </li>
                 {% else %}

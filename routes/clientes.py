@@ -1,8 +1,9 @@
 import csv
 import io
-from datetime import date
+from datetime import date, datetime, timedelta
 from functools import wraps
 from urllib.parse import quote as url_quote
+from sqlalchemy import func
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
 from extensions import db
 from models import Cliente
@@ -148,6 +149,33 @@ def seguimiento():
         clientes=clientes,
         hoy=hoy,
         wa_urls=wa_urls,
+    )
+
+
+@clientes_bp.route("/clientes/estadisticas")
+@login_requerido
+def estadisticas():
+    total       = Cliente.query.count()
+    por_estado  = db.session.query(Cliente.estado, func.count(Cliente.id)).group_by(Cliente.estado).all()
+    por_fuente  = db.session.query(Cliente.fuente,  func.count(Cliente.id)).group_by(Cliente.fuente).all()
+    esta_semana = Cliente.query.filter(Cliente.fecha_registro >= datetime.now() - timedelta(days=7)).count()
+    este_mes    = Cliente.query.filter(Cliente.fecha_registro >= datetime.now() - timedelta(days=30)).count()
+    por_producto = (
+        db.session.query(Cliente.producto_interes, func.count(Cliente.id))
+        .filter(Cliente.producto_interes != None, Cliente.producto_interes != "")
+        .group_by(Cliente.producto_interes)
+        .order_by(func.count(Cliente.id).desc())
+        .limit(5)
+        .all()
+    )
+    return render_template(
+        "admin/clientes/estadisticas.html",
+        total=total,
+        por_estado=por_estado,
+        por_fuente=por_fuente,
+        esta_semana=esta_semana,
+        este_mes=este_mes,
+        por_producto=por_producto,
     )
 
 
