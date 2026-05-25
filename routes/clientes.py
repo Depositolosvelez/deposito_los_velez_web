@@ -119,3 +119,14 @@ def exportar():
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=clientes.csv"},
     )
+
+
+@clientes_bp.route("/clientes/eliminar/<int:id>", methods=["POST"])
+@login_requerido
+def eliminar(id):
+    cliente = Cliente.query.get_or_404(id)
+    nombre = cliente.nombre
+    db.session.delete(cliente)
+    db.session.commit()
+    flash(f"Cliente '{nombre}' eliminado.", "warning")
+    return redirect(url_for("clientes.lista"))

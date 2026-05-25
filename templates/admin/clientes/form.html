@@ -79,6 +79,17 @@
                                           placeholder="Información adicional del cliente...">{{ cliente.notas if cliente else '' }}</textarea>
                             </div>
 
+                            <!-- Botón de dictado por voz -->
+                            <div class="mb-3">
+                                <button type="button" id="btn-voz"
+                                        class="btn fw-semibold w-100"
+                                        style="background-color:#fdcb17; color:#000;"
+                                        onclick="iniciarDictado()">
+                                    🎤 Dictar datos del cliente
+                                </button>
+                                <div id="voz-estado" class="form-text text-center mt-1" style="min-height:1.2em;"></div>
+                            </div>
+
                             <button type="submit" class="btn btn-warning fw-bold w-100">
                                 {% if cliente %}
                                     <i class="bi bi-save-fill me-1"></i>Guardar cambios
