@@ -132,7 +132,7 @@ def _wa_seguimiento_url(cliente):
         return None
     tel  = cliente.telefono.replace(" ", "").replace("-", "")
     prod = cliente.producto_interes or "nuestros productos"
-    msg  = f"Hola {cliente.nombre}, le contactamos de Vélez Depósito y Materiales. ¿Sigue interesado en {prod}?"
+    msg  = f"Hola {cliente.nombre}, le contactamos de Vélez Depósitos y Materiales. ¿Sigue interesado en {prod}?"
     return f"https://wa.me/57{tel}?text={url_quote(msg)}"
 
 
