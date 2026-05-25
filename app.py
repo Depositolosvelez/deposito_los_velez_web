@@ -19,11 +19,13 @@ def create_app():
     db.init_app(app)
 
     # ================= BLUEPRINTS =================
-    from routes.publicas import publicas_bp
-    from routes.admin    import admin_bp
+    from routes.publicas  import publicas_bp
+    from routes.admin     import admin_bp
+    from routes.clientes  import clientes_bp
 
     app.register_blueprint(publicas_bp)
-    app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(admin_bp,    url_prefix="/admin")
+    app.register_blueprint(clientes_bp, url_prefix="/admin")
 
     # ================= CREAR TABLAS =================
     with app.app_context():

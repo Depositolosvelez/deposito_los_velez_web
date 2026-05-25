@@ -36,6 +36,20 @@
         <!-- MENÚ -->
         <div class="collapse navbar-collapse justify-content-end" id="menu">
             <ul class="navbar-nav mb-2 mb-lg-0">
+                {% if request.path.startswith('/admin') and session.get('admin_logueado') %}
+                <li class="nav-item">
+                    <a class="nav-link {% if not request.path.startswith('/admin/clientes') %}active{% endif %}"
+                       href="{{ url_for('admin.lista') }}">
+                        <i class="bi bi-box-seam me-1"></i>Productos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes') %}active{% endif %}"
+                       href="{{ url_for('clientes.lista') }}">
+                        <i class="bi bi-people me-1"></i>Clientes
+                    </a>
+                </li>
+                {% else %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Inicio</a>
                 </li>
@@ -45,6 +59,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/contacto' %}active{% endif %}" href="/contacto">Contacto</a>
                 </li>
+                {% endif %}
             </ul>
         </div>
 
