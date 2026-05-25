@@ -66,6 +66,7 @@
                         <th>Teléfono</th>
                         <th>Ciudad</th>
                         <th>Producto de interés</th>
+                        <th>Fuente</th>
                         <th>Estado</th>
                         <th>Fecha</th>
                         <th class="text-center">Acciones</th>
@@ -89,6 +90,9 @@
                         <td>{{ c.ciudad or '—' }}</td>
                         <td class="text-muted small" style="max-width: 180px;">
                             {{ c.producto_interes[:60] ~ '...' if c.producto_interes and c.producto_interes | length > 60 else (c.producto_interes or '—') }}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary text-white small">{{ c.fuente or '—' }}</span>
                         </td>
                         <td>
                             <span class="badge bg-{{ colores.get(c.estado, 'secondary') }} {% if c.estado == 'Seguimiento' %}text-dark{% endif %}">

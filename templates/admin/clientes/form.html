@@ -73,6 +73,19 @@
                                 </select>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">¿Cómo nos conoció?</label>
+                                <select name="fuente" class="form-select">
+                                    {% for f in fuentes %}
+                                        <option value="{{ f }}"
+                                            {% if cliente and cliente.fuente == f %}selected
+                                            {% elif not cliente and f == 'Walk-in' %}selected{% endif %}>
+                                            {{ f }}{% if f == 'Walk-in' %} (vino al local){% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
                             <div class="mb-4">
                                 <label class="form-label fw-semibold">Notas</label>
                                 <textarea name="notas" class="form-control" rows="3"

@@ -25,6 +25,7 @@ class Cliente(db.Model):
     ciudad           = db.Column(db.String(100), nullable=True)
     producto_interes = db.Column(db.String(200), nullable=True)
     estado           = db.Column(db.String(50), nullable=False, default="Interesado")
+    fuente           = db.Column(db.String(50), nullable=True, default="Directo")
     notas            = db.Column(db.Text, nullable=True)
     fecha_registro   = db.Column(db.DateTime, default=datetime.utcnow)
 

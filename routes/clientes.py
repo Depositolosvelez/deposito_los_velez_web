@@ -7,7 +7,8 @@ from models import Cliente
 
 clientes_bp = Blueprint("clientes", __name__)
 
-ESTADOS = ["Interesado", "Compró", "Seguimiento", "Frío"]
+ESTADOS  = ["Interesado", "Compró", "Seguimiento", "Frío"]
+FUENTES  = ["WhatsApp", "Referido", "Walk-in", "Web", "Facebook", "Otro"]
 
 
 def login_requerido(f):
@@ -59,6 +60,7 @@ def nuevo():
             ciudad=request.form.get("ciudad", "").strip(),
             producto_interes=request.form.get("producto_interes", "").strip(),
             estado=request.form.get("estado", "Interesado").strip(),
+            fuente=request.form.get("fuente", "Walk-in").strip(),
             notas=request.form.get("notas", "").strip(),
         )
         db.session.add(cliente)
@@ -66,7 +68,7 @@ def nuevo():
         flash(f"Cliente '{nombre}' agregado correctamente.", "success")
         return redirect(url_for("clientes.lista"))
 
-    return render_template("admin/clientes/form.html", cliente=None, estados=ESTADOS)
+    return render_template("admin/clientes/form.html", cliente=None, estados=ESTADOS, fuentes=FUENTES)
 
 
 @clientes_bp.route("/clientes/<int:id>/editar", methods=["GET", "POST"])
@@ -85,13 +87,14 @@ def editar(id):
         cliente.ciudad = request.form.get("ciudad", "").strip()
         cliente.producto_interes = request.form.get("producto_interes", "").strip()
         cliente.estado = request.form.get("estado", "Interesado").strip()
+        cliente.fuente = request.form.get("fuente", "Walk-in").strip()
         cliente.notas = request.form.get("notas", "").strip()
 
         db.session.commit()
         flash(f"Cliente '{cliente.nombre}' actualizado.", "success")
         return redirect(url_for("clientes.lista"))
 
-    return render_template("admin/clientes/form.html", cliente=cliente, estados=ESTADOS)
+    return render_template("admin/clientes/form.html", cliente=cliente, estados=ESTADOS, fuentes=FUENTES)
 
 
 @clientes_bp.route("/clientes/exportar")
