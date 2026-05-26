@@ -66,3 +66,7 @@ def pagina_no_encontrada(e):
 @publicas_bp.errorhandler(500)
 def error_interno(e):
     return render_template("500.html"), 500
+
+@publicas_bp.route('/privacidad')
+def privacidad():
+    return render_template('privacidad.html')
