@@ -32,7 +32,7 @@ def login():
         usuario  = request.form.get("usuario", "")
         password = request.form.get("password", "")
         admin_user = os.environ.get("ADMIN_USER", "admin")
-        admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
+        admin_pass = os.environ.get("ADMIN_PASSWORD", "Velez2026$#")
 
         if usuario == admin_user and password == admin_pass:
             session["admin_logueado"] = True
