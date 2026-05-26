@@ -2,6 +2,20 @@ from flask import Blueprint, Response
 
 sitemap_bp = Blueprint('sitemap', __name__)
 
+
+@sitemap_bp.route('/robots.txt')
+def robots():
+    content = """User-agent: *
+Allow: /
+Allow: /productos
+Allow: /contacto
+Disallow: /admin
+Disallow: /admin/
+Disallow: /static/
+
+Sitemap: https://depositolosvelez.pythonanywhere.com/sitemap.xml"""
+    return Response(content, mimetype='text/plain')
+
 @sitemap_bp.route('/sitemap.xml')
 def sitemap():
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
