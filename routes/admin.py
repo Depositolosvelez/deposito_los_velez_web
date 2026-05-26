@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.utils import secure_filename
 from extensions import db
@@ -6,8 +7,11 @@ from models import Producto
 
 admin_bp = Blueprint("admin", __name__)
 
-UPLOAD_FOLDER   = os.path.join("static", "img", "productos")
+UPLOAD_FOLDER      = os.path.join("static", "img", "productos")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+
+# Rastreo de intentos de login por IP {ip: {"count": n, "blocked_until": datetime|None}}
+_login_attempts: dict = {}
 
 
 def allowed_file(filename):
@@ -26,19 +30,41 @@ def login_requerido(f):
 
 
 # ================= LOGIN =================
+MAX_INTENTOS  = 5
+BLOQUEO_MIN   = 15
+
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        usuario  = request.form.get("usuario", "")
-        password = request.form.get("password", "")
+        ip = request.remote_addr
+        ahora = datetime.now()
+        datos = _login_attempts.get(ip, {"count": 0, "blocked_until": None})
+
+        # Verificar bloqueo activo
+        if datos["blocked_until"] and ahora < datos["blocked_until"]:
+            minutos = int((datos["blocked_until"] - ahora).seconds / 60) + 1
+            flash(f"Demasiados intentos. Intenta en {minutos} minuto{'s' if minutos != 1 else ''}.", "danger")
+            return render_template("admin/login.html")
+
+        usuario    = request.form.get("usuario", "")
+        password   = request.form.get("password", "")
         admin_user = os.environ.get("ADMIN_USER", "admin")
-        admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
+        admin_pass = os.environ.get("ADMIN_PASSWORD", "Velez2026$#")
 
         if usuario == admin_user and password == admin_pass:
+            _login_attempts.pop(ip, None)
             session["admin_logueado"] = True
             return redirect(url_for("admin.lista"))
         else:
-            flash("Usuario o contraseña incorrectos.", "danger")
+            datos["count"] += 1
+            if datos["count"] >= MAX_INTENTOS:
+                datos["blocked_until"] = ahora + timedelta(minutes=BLOQUEO_MIN)
+                datos["count"] = 0
+                flash(f"Demasiados intentos. Intenta en {BLOQUEO_MIN} minutos.", "danger")
+            else:
+                restantes = MAX_INTENTOS - datos["count"]
+                flash(f"Usuario o contraseña incorrectos. Intentos restantes: {restantes}.", "danger")
+            _login_attempts[ip] = datos
 
     return render_template("admin/login.html")
 
@@ -86,7 +112,10 @@ def agregar():
 
         # Guardar foto
         nombre_foto = None
-        if foto and allowed_file(foto.filename):
+        if foto and foto.filename:
+            if not allowed_file(foto.filename):
+                flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
+                return redirect(url_for("admin.agregar"))
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             nombre_foto = secure_filename(foto.filename)
             foto.save(os.path.join(UPLOAD_FOLDER, nombre_foto))
@@ -124,7 +153,10 @@ def editar(id):
             return redirect(url_for("admin.editar", id=id))
 
         foto = request.files.get("foto")
-        if foto and allowed_file(foto.filename):
+        if foto and foto.filename:
+            if not allowed_file(foto.filename):
+                flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
+                return redirect(url_for("admin.editar", id=id))
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             nombre_foto = secure_filename(foto.filename)
             foto.save(os.path.join(UPLOAD_FOLDER, nombre_foto))
