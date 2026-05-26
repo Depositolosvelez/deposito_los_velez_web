@@ -53,6 +53,11 @@ def contacto():
     return render_template("contacto.html")
 
 
+@publicas_bp.route("/privacidad")
+def privacidad():
+    return render_template("privacidad.html")
+
+
 @publicas_bp.errorhandler(404)
 def pagina_no_encontrada(e):
     return render_template("404.html"), 404
