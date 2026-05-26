@@ -22,10 +22,20 @@ def create_app():
     from routes.publicas  import publicas_bp
     from routes.admin     import admin_bp
     from routes.clientes  import clientes_bp
+    from routes.sitemap   import sitemap_bp
 
     app.register_blueprint(publicas_bp)
     app.register_blueprint(admin_bp,    url_prefix="/admin")
     app.register_blueprint(clientes_bp, url_prefix="/admin")
+    app.register_blueprint(sitemap_bp)
+
+    # ================= CABECERAS DE SEGURIDAD =================
+    @app.after_request
+    def security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"]        = "DENY"
+        response.headers["X-XSS-Protection"]       = "1; mode=block"
+        return response
 
     # ================= CREAR TABLAS =================
     with app.app_context():
