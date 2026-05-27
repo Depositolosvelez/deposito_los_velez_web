@@ -29,21 +29,57 @@
             Cada artículo es único en medidas y estado. Consulta disponibilidad antes de visitarnos.
         </p>
 
-        <!-- Filtros por categoría -->
-        {% if categorias %}
-        <div class="d-flex flex-wrap justify-content-center gap-2">
-            <a href="{{ url_for('publicas.productos') }}"
-               class="filtro-btn {% if not categoria_activa %}filtro-activo{% else %}filtro-inactivo{% endif %}">
-                Todos
-            </a>
-            {% for cat in categorias %}
-            <a href="{{ url_for('publicas.productos', categoria=cat) }}"
-               class="filtro-btn {% if categoria_activa == cat %}filtro-activo{% else %}filtro-inactivo{% endif %}">
-                {{ cat }}
-            </a>
+        <!-- Filtros por grupo -->
+        {% set grupos = [
+            ('🚿 Baños',          ['BAÑOS Y SANITARIOS', 'LAVAPLATOS']),
+            ('🚪 Puertas y Rejas', ['PUERTAS', 'REJAS Y PROTECTORES', 'VENTANAS']),
+            ('🏠 Techos',          ['TECHOS Y CUBIERTAS']),
+            ('⚡ Eléctrico',       ['CABLE ELÉCTRICO', 'GUAYAS EN ALUMINIO', 'GUAYAS EN ACERO', 'HERRAJE ELÉCTRICO', 'TRANSFORMADORES']),
+            ('🔧 Herramienta',     ['HERRAMIENTA Y FERRETERÍA', 'ESCALERAS ESTRUCTURALES', 'ESCALERAS DE ALUMINIO', 'MAQUINARIA Y EQUIPOS']),
+            ('🪟 Tubería',         ['TUBERÍA PVC', 'ACCESORIOS PVC', 'TUBERÍA HIERRO GALVANIZADO']),
+            ('📦 Otros',           ['COCINA', 'HORNOS', 'MALLAS', 'SEGURIDAD INDUSTRIAL', 'VARIOS']),
+        ] %}
+
+        <div class="filtros-wrapper">
+
+            <!-- Fila 1: botón Todos + grupos -->
+            <div class="filtros-grupos">
+                <a href="{{ url_for('publicas.productos') }}"
+                   class="filtro-grupo-btn{% if not categoria_activa %} fg-activo{% endif %}">
+                    Todos
+                </a>
+                {% for nombre_grupo, subcats in grupos %}
+                    {% set idx = loop.index %}
+                    {% set grupo_activo = categoria_activa in subcats %}
+                    <button class="filtro-grupo-btn{% if grupo_activo %} fg-activo fg-expandido{% endif %}"
+                            onclick="toggleGrupo(this, 'subcats-{{ idx }}')"
+                            data-grupo="subcats-{{ idx }}">
+                        {{ nombre_grupo }}
+                        <span class="fg-chevron">▾</span>
+                    </button>
+                {% endfor %}
+            </div>
+
+            <!-- Fila 2: subcategorías del grupo activo -->
+            {% for nombre_grupo, subcats in grupos %}
+                {% set idx = loop.index %}
+                {% set grupo_activo = categoria_activa in subcats %}
+                {% set subcats_visibles = subcats | select('in', categorias) | list %}
+                {% if subcats_visibles %}
+                <div id="subcats-{{ idx }}" class="filtros-subcats{% if grupo_activo %} fs-visible{% endif %}">
+                    {% for cat in subcats %}
+                        {% if cat in categorias %}
+                        <a href="{{ url_for('publicas.productos', categoria=cat) }}"
+                           class="filtro-subcat{% if categoria_activa == cat %} fs-activo{% endif %}">
+                            {{ cat }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
             {% endfor %}
+
         </div>
-        {% endif %}
 
     </div>
 </div>
@@ -249,35 +285,103 @@
 </div>
 
 <style>
-.filtro-btn {
-    display: inline-block;
-    padding: 11px 28px;
+/* === FILTROS POR GRUPO === */
+.filtros-wrapper { width: 100%; }
+
+.filtros-grupos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.filtro-grupo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 20px;
     border-radius: 50px;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 700;
-    text-decoration: none;
-    transition: all 0.25s;
-}
-.filtro-activo {
-    background: #D4AF37;
-    color: #080a0f;
-    border: 2px solid #D4AF37;
-}
-.filtro-activo:hover {
-    background: #f5cc5a;
-    color: #080a0f;
-    border-color: #f5cc5a;
-}
-.filtro-inactivo {
+    cursor: pointer;
+    border: 2px solid rgba(212,175,55,0.45);
     background: transparent;
     color: #D4AF37;
-    border: 2px solid rgba(212, 175, 55, 0.45);
+    text-decoration: none;
+    transition: all 0.22s;
+    white-space: nowrap;
 }
-.filtro-inactivo:hover {
-    background: rgba(212, 175, 55, 0.1);
-    color: #D4AF37;
+.filtro-grupo-btn:hover,
+.filtro-grupo-btn.fg-activo {
+    background: #D4AF37;
+    color: #080a0f;
     border-color: #D4AF37;
 }
+.fg-chevron {
+    display: inline-block;
+    font-size: 0.75rem;
+    transition: transform 0.22s;
+}
+.fg-expandido .fg-chevron { transform: rotate(180deg); }
+
+.filtros-subcats {
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 14px 16px;
+    background: rgba(212,175,55,0.05);
+    border-radius: 14px;
+    border: 1px solid rgba(212,175,55,0.18);
+    animation: fadeDown 0.2s ease;
+}
+.filtros-subcats.fs-visible { display: flex; }
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.filtro-subcat {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid rgba(212,175,55,0.3);
+    color: rgba(255,255,255,0.8);
+    background: transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.filtro-subcat:hover,
+.filtro-subcat.fs-activo {
+    background: rgba(212,175,55,0.15);
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
 </style>
+
+<script>
+function toggleGrupo(btn, grupoId) {
+    const yaExpandido = btn.classList.contains('fg-expandido');
+
+    // Cerrar todo
+    document.querySelectorAll('.filtro-grupo-btn').forEach(b => {
+        b.classList.remove('fg-activo', 'fg-expandido');
+    });
+    document.querySelectorAll('.filtros-subcats').forEach(d => {
+        d.classList.remove('fs-visible');
+    });
+
+    if (!yaExpandido) {
+        btn.classList.add('fg-activo', 'fg-expandido');
+        const panel = document.getElementById(grupoId);
+        if (panel) panel.classList.add('fs-visible');
+    }
+}
+</script>
 
 {% endblock %}
