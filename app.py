@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__)
     # ================= CONFIGURACIÓN =================
     app.config["SECRET_KEY"]        = os.environ.get("SECRET_KEY", "cambia-esto-en-produccion")
-    app.config["DEBUG"]             = True
+    app.config["DEBUG"]             = os.environ.get("DEBUG", "false").lower() == "true"
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SQLALCHEMY_DATABASE_URI"]        = os.environ.get("DATABASE_URL", "sqlite:///deposito.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

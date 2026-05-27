@@ -64,8 +64,9 @@
             {% for nombre_grupo, subcats in grupos %}
                 {% set idx = loop.index %}
                 {% set grupo_activo = categoria_activa in subcats %}
-                {% set subcats_visibles = subcats | select('in', categorias) | list %}
-                {% if subcats_visibles %}
+                {% set ns = namespace(tiene=false) %}
+                {% for cat in subcats %}{% if cat in categorias %}{% set ns.tiene = true %}{% endif %}{% endfor %}
+                {% if ns.tiene %}
                 <div id="subcats-{{ idx }}" class="filtros-subcats{% if grupo_activo %} fs-visible{% endif %}">
                     {% for cat in subcats %}
                         {% if cat in categorias %}
