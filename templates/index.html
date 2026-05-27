@@ -2,7 +2,12 @@
 {% block head_seo %}
 <meta name="description" content="Vélez Depósitos y Materiales - Materiales de construcción de segunda en Montería, Córdoba. Puertas, sanitarios, rejas, ventanas y más. Ahorra hasta 40% vs materiales nuevos.">
 <meta name="keywords" content="materiales construcción Montería, puertas hierro Montería, sanitarios segunda mano, materiales demolición Córdoba, depósito materiales Montería">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+@font-face {
+    font-family: 'Nasalization';
+    src: url("{{ url_for('static', filename='fonts/nasalization-rg.otf') }}") format('opentype');
+}
+</style>
 {% endblock %}
 {% block titulo %}Vélez Depósitos y Materiales | Materiales de construcción de segunda en Montería{% endblock %}
 {% block descripcion %}Compra materiales de demolición y construcción de segunda en Montería, Córdoba. Puertas de hierro, sanitarios, cables y más. Despachos a toda la región.{% endblock %}
@@ -34,8 +39,8 @@
     Montería · Córdoba · Colombia
   </p>
 
-  <h1 style="color:#ffffff;font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.2;margin-bottom:18px;letter-spacing:5px;font-family:'Orbitron',sans-serif;">
-    VÉLEZ<br><span style="color:#D4AF37;letter-spacing:4px;font-family:'Orbitron',sans-serif;">DEPÓSITOS Y MATERIALES</span>
+  <h1 style="color:#ffffff;font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.2;margin-bottom:18px;letter-spacing:5px;font-family:'Nasalization',sans-serif;">
+    VÉLEZ<br><span style="color:#D4AF37;letter-spacing:4px;font-family:'Nasalization',sans-serif;">DEPÓSITOS Y MATERIALES</span>
   </h1>
 
   <p style="color:rgba(255,255,255,0.65);font-size:clamp(1rem,2.2vw,1.15rem);max-width:520px;line-height:1.8;margin-bottom:36px;">
