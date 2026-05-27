@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block head_seo %}
+<meta name="description" content="{{ producto.nombre }} — Vélez Depósitos y Materiales. Material de construcción de segunda en Montería, Córdoba.">
+{% endblock %}
+
+{% block contenido %}
+
+<div style="background:#080a0f; min-height:100vh; padding:60px 0;">
+    <div class="container" style="max-width:900px;">
+
+        <!-- Volver -->
+        <a href="/productos" class="text-decoration-none d-inline-flex align-items-center gap-2 mb-4"
+           style="color:#D4AF37; font-size:0.9rem; font-weight:600;">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
+        </a>
+
+        <div class="row g-5 align-items-start">
+
+            <!-- Foto -->
+            <div class="col-12 col-md-6">
+                <div style="border-radius:20px; overflow:hidden; border:2px solid rgba(212,175,55,0.2); background:#0d1017; aspect-ratio:4/3;">
+                    {% if producto.foto %}
+                    <img src="{{ url_for('static', filename='img/productos/' ~ producto.foto) }}"
+                         alt="{{ producto.nombre }}"
+                         style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <i class="bi bi-image" style="font-size:5rem; color:#333;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="col-12 col-md-6">
+
+                <!-- Categoría badge -->
+                <span style="background:#D4AF37; color:#080a0f; padding:4px 16px; border-radius:30px;
+                             font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
+                    {{ producto.categoria }}
+                </span>
+
+                <!-- Nombre -->
+                <h1 style="color:#fff; font-size:clamp(1.6rem,4vw,2.2rem); font-weight:800;
+                           line-height:1.2; margin-top:16px; margin-bottom:8px;">
+                    {{ producto.nombre }}
+                </h1>
+
+                <!-- Precio -->
+                <p style="color:#D4AF37; font-size:2.4rem; font-weight:800; letter-spacing:-1px; margin-bottom:4px; line-height:1;">
+                    ${{ "{:,.0f}".format(producto.precio).replace(",", ".") }}
+                    <span style="color:#888; font-size:0.85rem; font-weight:400; letter-spacing:0;"> COP</span>
+                </p>
+                <p style="color:#666; font-size:0.8rem; margin-bottom:24px;">Precio negociable · Consulta disponibilidad</p>
+
+                <!-- Descripción -->
+                {% if producto.descripcion %}
+                <p style="color:rgba(255,255,255,0.7); font-size:0.97rem; line-height:1.8; margin-bottom:32px;">
+                    {{ producto.descripcion }}
+                </p>
+                {% endif %}
+
+                <!-- Botón WhatsApp -->
+                <a href="https://wa.me/573508494766?text=Hola!%20Me%20interesa%20el%20producto:%20{{ producto.nombre | urlencode }}"
+                   target="_blank"
+                   class="btn w-100 fw-bold d-flex align-items-center justify-content-center gap-2"
+                   style="background:#25D366; color:#fff; border:none; border-radius:14px;
+                          font-size:1.05rem; padding:16px; transition:all 0.3s;
+                          box-shadow:0 6px 20px rgba(37,211,102,0.35);"
+                   onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 10px 30px rgba(37,211,102,0.5)'; this.style.transform='translateY(-2px)';"
+                   onmouseout="this.style.background='#25D366'; this.style.boxShadow='0 6px 20px rgba(37,211,102,0.35)'; this.style.transform='';">
+                    <i class="bi bi-whatsapp" style="font-size:1.2rem;"></i>
+                    Consultar por WhatsApp
+                </a>
+
+                <!-- Disponibilidad -->
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span style="width:10px; height:10px; border-radius:50%; background:#22c55e;
+                                 box-shadow:0 0 8px rgba(34,197,94,0.6); display:inline-block;"></span>
+                    <span style="color:rgba(255,255,255,0.5); font-size:0.82rem;">Disponible · Barrio Cantaclaro, Montería</span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

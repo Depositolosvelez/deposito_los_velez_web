@@ -53,6 +53,12 @@ def contacto():
     return render_template("contacto.html")
 
 
+@publicas_bp.route("/productos/<int:id>")
+def producto_detalle(id):
+    producto = Producto.query.get_or_404(id)
+    return render_template("producto_detalle.html", producto=producto)
+
+
 @publicas_bp.route("/privacidad")
 def privacidad():
     return render_template("privacidad.html")
