@@ -1,12 +1,4 @@
-@font-face {
-    font-family: 'VelezFont';
-    src: url('/fonts/VelezFont-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-html, body { margin: 0; padding: 0; background-color: #080a0f; color: #ffffff; font-family: 'VelezFont' !important; }
-h1 { font-family: 'VelezFont' !important; font-size: 80px; }
+html, body { margin: 0; padding: 0; background-color: #080a0f; color: #ffffff; }
 .navbar { background-color: #000000; }
 .navbar .nav-link { color: #ffffff; font-weight: 500; margin-left: 12px; transition: all 0.3s ease; }
 .navbar .nav-link:hover { color: #D4AF37; transform: translateY(-2px); }
