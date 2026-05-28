@@ -99,7 +99,7 @@
                         </td>
                         <td class="fw-semibold">{{ p.nombre }}</td>
                         <td><span class="badge bg-warning text-dark">{{ p.categoria }}</span></td>
-                        <td class="fw-bold">${{ "%.0f"|format(p.precio) }}</td>
+                        <td class="fw-bold">${{ "{:,.0f}".format(p.precio).replace(",", ".") }}</td>
                         <td class="text-muted small" style="max-width: 200px;">
                             {{ p.descripcion[:80] ~ '...' if p.descripcion and p.descripcion|length > 80 else p.descripcion }}
                         </td>
