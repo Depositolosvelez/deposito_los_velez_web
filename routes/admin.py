@@ -79,8 +79,29 @@ def logout():
 @admin_bp.route("/")
 @login_requerido
 def lista():
-    productos = Producto.query.all()
-    return render_template("admin/lista.html", productos=productos)
+    q   = request.args.get("q", "").strip()
+    cat = request.args.get("cat", "").strip()
+
+    query = Producto.query
+    if q:
+        query = query.filter(
+            db.or_(
+                Producto.nombre.ilike(f"%{q}%"),
+                Producto.descripcion.ilike(f"%{q}%")
+            )
+        )
+    if cat:
+        query = query.filter(Producto.categoria == cat)
+
+    productos   = query.order_by(Producto.nombre).all()
+    categorias  = db.session.query(Producto.categoria).distinct().order_by(Producto.categoria).all()
+    categorias  = [c[0] for c in categorias]
+
+    return render_template("admin/lista.html",
+                           productos=productos,
+                           categorias=categorias,
+                           q=q,
+                           cat=cat)
 
 
 # ================= AGREGAR PRODUCTO =================

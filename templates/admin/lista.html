@@ -27,6 +27,48 @@
             {% endfor %}
         {% endwith %}
 
+        <form method="GET" action="{{ url_for('admin.lista') }}" class="row g-2 mb-4">
+            <div class="col-12 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary">
+                        <i class="bi bi-search text-warning"></i>
+                    </span>
+                    <input type="text"
+                           name="q"
+                           value="{{ q }}"
+                           class="form-control border-secondary"
+                           placeholder="Buscar por nombre o descripción...">
+                    {% if q or cat %}
+                    <a href="{{ url_for('admin.lista') }}" class="btn btn-outline-secondary" title="Limpiar">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <select name="cat" class="form-select border-secondary" onchange="this.form.submit()">
+                    <option value="">Todas las categorías</option>
+                    {% for c in categorias %}
+                    <option value="{{ c }}" {% if c == cat %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-warning w-100 fw-bold">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </button>
+            </div>
+        </form>
+
+        {% if q or cat %}
+        <p class="text-muted small mb-3">
+            <i class="bi bi-funnel-fill me-1"></i>
+            {{ productos|length }} resultado{{ 's' if productos|length != 1 else '' }}
+            {% if q %} para <strong>"{{ q }}"</strong>{% endif %}
+            {% if cat %} en <strong>{{ cat }}</strong>{% endif %}
+        </p>
+        {% endif %}
+
         {% if productos %}
         <div class="table-responsive">
             <table class="table table-hover align-middle shadow-sm rounded overflow-hidden">
