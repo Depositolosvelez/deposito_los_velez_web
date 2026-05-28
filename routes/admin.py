@@ -10,19 +10,51 @@ admin_bp = Blueprint("admin", __name__)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
-def get_upload_folder():
-    return os.path.join(current_app.root_path, "static", "img", "productos")
-
-def unique_filename(filename):
-    ext = filename.rsplit(".", 1)[1].lower()
-    return f"{uuid.uuid4().hex}.{ext}"
-
-# Rastreo de intentos de login por IP {ip: {"count": n, "blocked_until": datetime|None}}
-_login_attempts: dict = {}
-
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _cloudinary_configured():
+    return all([
+        os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        os.environ.get("CLOUDINARY_API_KEY"),
+        os.environ.get("CLOUDINARY_API_SECRET"),
+    ])
+
+
+def guardar_imagen(file_storage):
+    """
+    Sube la imagen a Cloudinary si está configurado, o la guarda localmente.
+    Devuelve la URL de Cloudinary (str) o el nombre de archivo local (str).
+    """
+    if _cloudinary_configured():
+        import cloudinary
+        import cloudinary.uploader
+        cloudinary.config(
+            cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+            api_key=os.environ.get("CLOUDINARY_API_KEY"),
+            api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+            secure=True,
+        )
+        result = cloudinary.uploader.upload(
+            file_storage,
+            folder="deposito_los_velez",
+            resource_type="image",
+        )
+        return result["secure_url"]
+    else:
+        # Fallback: guardar localmente
+        upload_folder = os.path.join(current_app.root_path, "static", "img", "productos")
+        os.makedirs(upload_folder, exist_ok=True)
+        ext = secure_filename(file_storage.filename).rsplit(".", 1)[1].lower()
+        nombre = f"{uuid.uuid4().hex}.{ext}"
+        file_storage.save(os.path.join(upload_folder, nombre))
+        return nombre
+
+
+# Rastreo de intentos de login por IP {ip: {"count": n, "blocked_until": datetime|None}}
+_login_attempts: dict = {}
 
 
 def login_requerido(f):
@@ -122,7 +154,6 @@ def agregar():
         descripcion = request.form.get("descripcion", "").strip()
         foto        = request.files.get("foto")
 
-        # Validación
         errores = []
         if not nombre:
             errores.append("El nombre es obligatorio.")
@@ -138,18 +169,17 @@ def agregar():
                 flash(e, "danger")
             return redirect(url_for("admin.agregar"))
 
-        # Guardar foto
         nombre_foto = None
         if foto and foto.filename:
             if not allowed_file(foto.filename):
-                flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
+                flash("Formato no permitido. Usa JPG, PNG o WEBP.", "danger")
                 return redirect(url_for("admin.agregar"))
-            upload_folder = get_upload_folder()
-            os.makedirs(upload_folder, exist_ok=True)
-            nombre_foto = unique_filename(secure_filename(foto.filename))
-            foto.save(os.path.join(upload_folder, nombre_foto))
+            try:
+                nombre_foto = guardar_imagen(foto)
+            except Exception as e:
+                flash(f"Error al subir la imagen: {e}", "danger")
+                return redirect(url_for("admin.agregar"))
 
-        # Guardar en BD
         nuevo = Producto(
             nombre=nombre,
             precio=precio,
@@ -184,13 +214,13 @@ def editar(id):
         foto = request.files.get("foto")
         if foto and foto.filename:
             if not allowed_file(foto.filename):
-                flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
+                flash("Formato no permitido. Usa JPG, PNG o WEBP.", "danger")
                 return redirect(url_for("admin.editar", id=id))
-            upload_folder = get_upload_folder()
-            os.makedirs(upload_folder, exist_ok=True)
-            nombre_foto = unique_filename(secure_filename(foto.filename))
-            foto.save(os.path.join(upload_folder, nombre_foto))
-            producto.foto = nombre_foto
+            try:
+                producto.foto = guardar_imagen(foto)
+            except Exception as e:
+                flash(f"Error al subir la imagen: {e}", "danger")
+                return redirect(url_for("admin.editar", id=id))
 
         db.session.commit()
         flash(f"Producto '{producto.nombre}' actualizado.", "success")
