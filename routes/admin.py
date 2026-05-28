@@ -1,14 +1,21 @@
 import os
+import uuid
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from werkzeug.utils import secure_filename
 from extensions import db
 from models import Producto
 
 admin_bp = Blueprint("admin", __name__)
 
-UPLOAD_FOLDER      = os.path.join("static", "img", "productos")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+
+def get_upload_folder():
+    return os.path.join(current_app.root_path, "static", "img", "productos")
+
+def unique_filename(filename):
+    ext = filename.rsplit(".", 1)[1].lower()
+    return f"{uuid.uuid4().hex}.{ext}"
 
 # Rastreo de intentos de login por IP {ip: {"count": n, "blocked_until": datetime|None}}
 _login_attempts: dict = {}
@@ -137,9 +144,10 @@ def agregar():
             if not allowed_file(foto.filename):
                 flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
                 return redirect(url_for("admin.agregar"))
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            nombre_foto = secure_filename(foto.filename)
-            foto.save(os.path.join(UPLOAD_FOLDER, nombre_foto))
+            upload_folder = get_upload_folder()
+            os.makedirs(upload_folder, exist_ok=True)
+            nombre_foto = unique_filename(secure_filename(foto.filename))
+            foto.save(os.path.join(upload_folder, nombre_foto))
 
         # Guardar en BD
         nuevo = Producto(
@@ -178,9 +186,10 @@ def editar(id):
             if not allowed_file(foto.filename):
                 flash("Formato de imagen no permitido. Usa JPG, PNG o WEBP.", "danger")
                 return redirect(url_for("admin.editar", id=id))
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            nombre_foto = secure_filename(foto.filename)
-            foto.save(os.path.join(UPLOAD_FOLDER, nombre_foto))
+            upload_folder = get_upload_folder()
+            os.makedirs(upload_folder, exist_ok=True)
+            nombre_foto = unique_filename(secure_filename(foto.filename))
+            foto.save(os.path.join(upload_folder, nombre_foto))
             producto.foto = nombre_foto
 
         db.session.commit()

@@ -12,6 +12,7 @@ def create_app():
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SQLALCHEMY_DATABASE_URI"]        = os.environ.get("DATABASE_URL", "sqlite:///deposito.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB máximo por archivo
     # ================= EXTENSIONES =================
     db.init_app(app)
     # ================= BLUEPRINTS =================
