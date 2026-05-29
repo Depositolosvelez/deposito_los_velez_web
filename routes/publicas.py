@@ -1,6 +1,7 @@
 import urllib.parse
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from models import Producto
+from extensions import db
 
 publicas_bp = Blueprint("publicas", __name__)
 
@@ -14,14 +15,24 @@ def index():
 @publicas_bp.route("/productos")
 def productos():
     """Catálogo de productos — carga desde la base de datos"""
-    categoria = request.args.get("categoria", "")
-    if categoria:
-        lista = Producto.query.filter_by(categoria=categoria).all()
-    else:
-        lista = Producto.query.all()
+    q         = request.args.get("q", "").strip()
+    categoria = request.args.get("categoria", "").strip()
 
+    query = Producto.query
+    if q:
+        query = query.filter(
+            db.or_(
+                Producto.nombre.ilike(f"%{q}%"),
+                Producto.descripcion.ilike(f"%{q}%")
+            )
+        )
+    if categoria:
+        query = query.filter_by(categoria=categoria)
+
+    lista      = query.order_by(Producto.nombre).all()
     categorias = [r[0] for r in Producto.query.with_entities(Producto.categoria).distinct().all()]
-    return render_template("productos.html", productos=lista, categorias=categorias, categoria_activa=categoria)
+    return render_template("productos.html", productos=lista, categorias=categorias,
+                           categoria_activa=categoria, q=q)
 
 
 @publicas_bp.route("/contacto", methods=["GET", "POST"])
