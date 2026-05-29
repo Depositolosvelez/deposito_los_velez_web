@@ -238,3 +238,13 @@ def eliminar(id):
     db.session.commit()
     flash(f"Producto '{producto.nombre}' eliminado.", "success")
     return redirect(url_for("admin.lista"))
+
+
+# ================= MIGRACIÓN TEMPORAL =================
+@admin_bp.route("/migrar-seguridad")
+@login_requerido
+def migrar_seguridad():
+    n = Producto.query.filter_by(categoria="SEGURIDAD INDUSTRIAL").update({"categoria": "SEGURIDAD Y ALTURA"})
+    db.session.commit()
+    flash(f"{n} producto(s) renombrados de 'SEGURIDAD INDUSTRIAL' → 'SEGURIDAD Y ALTURA'.", "success")
+    return redirect(url_for("admin.lista"))
