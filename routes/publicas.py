@@ -76,6 +76,22 @@ def gracias():
     return render_template("gracias.html")
 
 
+@publicas_bp.route("/cotizar", methods=["POST"])
+def cotizar():
+    nombre   = request.form.get("nombre", "").strip()
+    telefono = request.form.get("telefono", "").strip()
+    mensaje  = request.form.get("mensaje", "").strip() or "Cotización solicitada"
+    fuente   = request.form.get("fuente", "Web").strip()
+    if not nombre or not telefono:
+        return redirect(url_for("publicas.contacto"))
+    db.session.add(Cliente(
+        nombre=nombre, telefono=telefono, notas=mensaje,
+        fuente=fuente, estado="Interesado",
+    ))
+    db.session.commit()
+    return redirect(url_for("publicas.gracias"))
+
+
 @publicas_bp.route("/productos/<int:id>")
 def producto_detalle(id):
     producto = Producto.query.get_or_404(id)
