@@ -17,6 +17,15 @@
 
     {% block head_seo %}{% endblock %}
     <meta name="google-site-verification" content="zgcOd1ycFWNsDDxo71Xd5n_PDSyDZog1iYW-7tRaFTk" />
+
+    <!-- Google Ads -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXX');
+    </script>
 </head>
 <body>
 
@@ -95,6 +104,8 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block conversion_event %}{% endblock %}
 
 <!-- Animaciones de tarjetas -->
 <script>

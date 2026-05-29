@@ -1,6 +1,6 @@
 import urllib.parse
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from models import Producto
+from models import Producto, Cliente
 from extensions import db
 
 publicas_bp = Blueprint("publicas", __name__)
@@ -37,17 +37,18 @@ def productos():
 
 @publicas_bp.route("/contacto", methods=["GET", "POST"])
 def contacto():
-    """Página de contacto con validación y redirección a WhatsApp"""
+    """Página de contacto — guarda el lead en la BD y redirige a /gracias"""
     if request.method == "POST":
-        nombre  = request.form.get("nombre", "").strip()
-        email   = request.form.get("email", "").strip()
-        mensaje = request.form.get("mensaje", "").strip()
+        nombre   = request.form.get("nombre", "").strip()
+        telefono = request.form.get("telefono", "").strip()
+        mensaje  = request.form.get("mensaje", "").strip()
+        fuente   = request.form.get("fuente", "Web").strip()
 
         errores = []
         if not nombre:
             errores.append("El nombre es obligatorio.")
-        if not email or "@" not in email:
-            errores.append("Ingresa un email válido.")
+        if not telefono:
+            errores.append("El teléfono es obligatorio.")
         if not mensaje:
             errores.append("El mensaje no puede estar vacío.")
 
@@ -56,12 +57,23 @@ def contacto():
                 flash(error, "danger")
             return redirect(url_for("publicas.contacto"))
 
-        texto = f"Hola, soy {nombre} ({email}). {mensaje}"
-        texto_codificado = urllib.parse.quote(texto)
-        whatsapp_url = f"https://wa.me/57TUNUMERO?text={texto_codificado}"
-        return redirect(whatsapp_url)
+        cliente = Cliente(
+            nombre=nombre,
+            telefono=telefono,
+            notas=mensaje,
+            fuente=fuente,
+            estado="Interesado",
+        )
+        db.session.add(cliente)
+        db.session.commit()
+        return redirect(url_for("publicas.gracias"))
 
     return render_template("contacto.html")
+
+
+@publicas_bp.route("/gracias")
+def gracias():
+    return render_template("gracias.html")
 
 
 @publicas_bp.route("/productos/<int:id>")

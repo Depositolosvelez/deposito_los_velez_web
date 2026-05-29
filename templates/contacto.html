@@ -90,14 +90,25 @@
                     Te cotizamos sin compromiso y respondemos en menos de 1 hora.
                 </p>
 
-                <form id="contactForm">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('publicas.contacto') }}">
+                    <input type="hidden" name="fuente" id="fuente-input" value="Web">
+
                     <div class="mb-3">
                         <label for="nombre" class="form-label fw-semibold" style="color:rgba(255,255,255,0.7); font-size:0.88rem;">Tu nombre</label>
                         <div class="input-group">
                             <span class="input-group-text" style="background:#111827; border:1.5px solid rgba(212,175,55,0.25); border-right:none; color:#D4AF37;">
                                 <i class="bi bi-person-fill"></i>
                             </span>
-                            <input type="text" class="form-control contacto-input" id="nombre"
+                            <input type="text" class="form-control contacto-input" id="nombre" name="nombre"
                                    placeholder="Ej: Carlos Martínez" required>
                         </div>
                     </div>
@@ -108,7 +119,7 @@
                             <span class="input-group-text" style="background:#111827; border:1.5px solid rgba(212,175,55,0.25); border-right:none; color:#D4AF37;">
                                 <i class="bi bi-telephone-fill"></i>
                             </span>
-                            <input type="text" class="form-control contacto-input" id="telefono"
+                            <input type="text" class="form-control contacto-input" id="telefono" name="telefono"
                                    placeholder="Ej: +57 300 000 0000" required>
                         </div>
                     </div>
@@ -119,7 +130,7 @@
                             <span class="input-group-text align-items-start pt-3" style="background:#111827; border:1.5px solid rgba(212,175,55,0.25); border-right:none; color:#D4AF37;">
                                 <i class="bi bi-chat-dots-fill"></i>
                             </span>
-                            <textarea class="form-control contacto-input" id="mensaje" rows="4"
+                            <textarea class="form-control contacto-input" id="mensaje" name="mensaje" rows="4"
                                       placeholder="Ej: Busco una puerta metálica de 90cm, ¿tienen disponible?" required
                                       style="resize:none;"></textarea>
                         </div>
@@ -129,11 +140,11 @@
                             style="background:#25D366; color:#fff; border:none; border-radius:14px; font-size:1rem; padding:15px; transition:all 0.3s; box-shadow:0 6px 20px rgba(37,211,102,0.3);"
                             onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 10px 28px rgba(37,211,102,0.45)'; this.style.transform='translateY(-1px)';"
                             onmouseout="this.style.background='#25D366'; this.style.boxShadow='0 6px 20px rgba(37,211,102,0.3)'; this.style.transform='';">
-                        <i class="bi bi-whatsapp me-2" style="font-size:1.1rem;"></i>Enviar por WhatsApp
+                        <i class="bi bi-send-fill me-2" style="font-size:1.1rem;"></i>Enviar consulta
                     </button>
 
                     <p class="text-center mt-3 mb-0" style="color:rgba(255,255,255,0.3); font-size:0.78rem;">
-                        <i class="bi bi-lock-fill me-1"></i>Tu información no se almacena
+                        <i class="bi bi-shield-check me-1"></i>Tu información es confidencial
                     </p>
                 </form>
             </div>
@@ -190,24 +201,17 @@
     </div>
 </div>
 
-<!-- JS formulario -->
+<!-- Detección de fuente (UTM params de Google Ads / Facebook) -->
 <script>
-document.getElementById("contactForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const nombre   = document.getElementById("nombre").value.trim();
-    const telefono = document.getElementById("telefono").value.trim();
-    const mensaje  = document.getElementById("mensaje").value.trim();
-
-    if (!nombre || !telefono || !mensaje) {
-        alert("Por favor completa todos los campos.");
-        return;
-    }
-
-    const texto = encodeURIComponent(`Hola! Soy ${nombre}. Mi contacto es ${telefono}.\nConsulta: ${mensaje}`);
-    window.open(`https://wa.me/573508494766?text=${texto}`, "_blank");
-    this.reset();
-});
+  const params = new URLSearchParams(window.location.search);
+  const utm = params.get('utm_source') || '';
+  const medium = params.get('utm_medium') || '';
+  const el = document.getElementById('fuente-input');
+  if (el) {
+    if (utm === 'google' || medium === 'cpc') el.value = 'Google Ads';
+    else if (utm === 'facebook' || utm === 'instagram') el.value = 'Facebook';
+    else if (utm) el.value = utm;
+  }
 </script>
 
 <style>
