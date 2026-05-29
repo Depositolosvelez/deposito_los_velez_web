@@ -240,6 +240,16 @@ def eliminar(id):
     return redirect(url_for("admin.lista"))
 
 
+# ================= PRODUCTOS SIN IMAGEN =================
+@admin_bp.route("/sin-imagen")
+@login_requerido
+def sin_imagen():
+    productos = Producto.query.filter(
+        db.or_(Producto.foto == None, Producto.foto == "")
+    ).order_by(Producto.categoria, Producto.nombre).all()
+    return render_template("admin/sin_imagen.html", productos=productos)
+
+
 # ================= MIGRACIÓN TEMPORAL =================
 @admin_bp.route("/migrar-seguridad")
 @login_requerido
