@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block titulo %}Vélez Depósitos y Materiales{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    <!-- Preconnect para acelerar carga de CDNs -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- SEO: meta description, keywords y Open Graph -->
+    {% block head_seo %}{% endblock %}
+    <meta name="google-site-verification" content="zgcOd1ycFWNsDDxo71Xd5n_PDSyDZog1iYW-7tRaFTk" />
+
+    <!-- Open Graph (compartir en redes y WhatsApp) -->
+    <meta property="og:type"        content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name"   content="Vélez Depósitos y Materiales">
+    <meta property="og:locale"      content="es_CO">
+    <meta property="og:title"       content="{% block og_titulo %}Vélez Depósitos y Materiales | Montería{% endblock %}">
+    <meta property="og:description" content="{% block og_descripcion %}Materiales de demolición y construcción de segunda en Montería, Córdoba. Puertas de hierro, sanitarios, cables, rejas y más.{% endblock %}">
+    <meta property="og:image"       content="{% block og_imagen %}{{ request.host_url }}static/img/logo_amarillo.png{% endblock %}">
+    <meta property="og:url"         content="{{ request.url }}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Schema.org LocalBusiness -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Vélez Depósitos y Materiales",
+      "description": "Materiales de demolición y construcción de segunda mano en Montería, Córdoba. Puertas de hierro, sanitarios, cables de cobre, rejas y más.",
+      "url": "https://velezdepositos.com.co",
+      "telephone": "+573508494766",
+      "email": "depositolosvelez@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Barrio Cantaclaro, diagonal a urgencias CAMU Viejo",
+        "addressLocality": "Montería",
+        "addressRegion": "Córdoba",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 8.73630,
+        "longitude": -75.86776
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        "opens": "08:00",
+        "closes": "18:00"
+      },
+      "priceRange": "$$",
+      "image": "https://velezdepositos.com.co/static/img/logo_amarillo.png",
+      "sameAs": ["https://wa.me/573508494766"]
+    }
+    </script>
+</head>
+<body>
+
+{% if not request.path.startswith('/admin') and request.path != '/gracias' %}
+<!-- BARRA SUPERIOR ANUNCIO -->
+<div id="top-bar" style="background:#D4AF37; padding:9px 50px 9px 16px; text-align:center; position:relative;">
+    <span style="color:#080a0f; font-size:0.85rem; font-weight:700;">
+        🏗️ Materiales de segunda en Montería &middot; Respondemos en 1 hora
+    </span>
+    <a href="{{ url_for('publicas.contacto') }}"
+       style="background:#080a0f; color:#D4AF37; border-radius:20px; padding:3px 14px; font-size:0.8rem; font-weight:700; text-decoration:none; margin-left:12px; white-space:nowrap;">
+        Cotizar ahora
+    </a>
+    <button onclick="cerrarTopBar()" aria-label="Cerrar barra"
+            style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#080a0f; font-size:1.3rem; font-weight:700; cursor:pointer; line-height:1; padding:2px 6px;">
+        &times;
+    </button>
+</div>
+{% endif %}
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-black sticky-top shadow-sm">
+    <div class="container">
+
+        <!-- LOGO -->
+        <a class="navbar-brand" href="/">
+            <img src="{{ url_for('static', filename='img/logo_amarillo.png') }}" alt="Vélez Depósitos y Materiales" height="40" width="auto">
+        </a>
+
+        <!-- BOTÓN MÓVIL -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- MENÚ -->
+        <div class="collapse navbar-collapse justify-content-end" id="menu">
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                {% if request.path.startswith('/admin') and session.get('admin_logueado') %}
+                <li class="nav-item">
+                    <a class="nav-link {% if not request.path.startswith('/admin/clientes') %}active{% endif %}"
+                       href="{{ url_for('admin.lista') }}">
+                        <i class="bi bi-box-seam me-1"></i>Productos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes') and not request.path.startswith('/admin/clientes/seguimiento') and not request.path.startswith('/admin/clientes/estadisticas') %}active{% endif %}"
+                       href="{{ url_for('clientes.lista') }}">
+                        <i class="bi bi-people me-1"></i>Clientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes/seguimiento') %}active{% endif %}"
+                       href="{{ url_for('clientes.seguimiento') }}">
+                        🔥 Seguimiento
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/admin/clientes/estadisticas') %}active{% endif %}"
+                       href="{{ url_for('clientes.estadisticas') }}">
+                        📊 Stats
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path.startswith('/productos') %}active{% endif %}" href="/productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/contacto' %}active{% endif %}" href="/contacto">Contacto</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="{% if request.path != '/' %}main-light{% endif %}">
+    {% block contenido %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-dark text-light text-center py-3">
+    <small>
+        © 2026 Vélez Depósitos y Materiales · Montería · Despachos a toda la región
+        · <a href="/privacidad" class="text-light text-decoration-none">Política de Privacidad</a>
+    </small>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block conversion_event %}{% endblock %}
+
+<!-- Botón WhatsApp flotante -->
+<a href="https://wa.me/573508494766?text=Hola!%20Quisiera%20consultar%20sobre%20sus%20materiales"
+   target="_blank"
+   id="whatsapp-chat"
+   title="Chatear por WhatsApp"
+   aria-label="Consultar por WhatsApp">
+    <img src="{{ url_for('static', filename='img/whatsapp_icon.png') }}" alt="WhatsApp" width="60" height="60">
+</a>
+
+<style>
+    #whatsapp-chat {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 1000;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+        display: block;
+    }
+    #whatsapp-chat img { width: 100%; height: 100%; object-fit: cover; }
+    #whatsapp-chat:hover { transform: scale(1.1); }
+</style>
+
+{% if not request.path.startswith('/admin') and request.path != '/gracias' %}
+
+<!-- Estilos para popups -->
+<style>
+.vp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9000;align-items:center;justify-content:center;padding:20px;}
+.vp-box{background:#0E1117;border:1px solid rgba(212,175,55,0.4);border-radius:20px;padding:36px 32px;max-width:420px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.vp-close{position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.6rem;cursor:pointer;line-height:1;padding:0;}
+.vp-close:hover{color:rgba(255,255,255,0.8);}
+.vp-input{width:100%;background:#111827;border:1.5px solid rgba(212,175,55,0.25);border-radius:10px;padding:12px 16px;color:#fff;font-size:0.92rem;outline:none;margin-bottom:12px;box-sizing:border-box;}
+.vp-input:focus{border-color:#D4AF37;}
+.vp-input::placeholder{color:rgba(255,255,255,0.3);}
+.vp-btn-green{width:100%;background:#25D366;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 6px 20px rgba(37,211,102,0.3);}
+.vp-btn-gold{width:100%;background:#D4AF37;color:#080a0f;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;cursor:pointer;}
+</style>
+
+<!-- POPUP ENTRADA (35 segundos) -->
+<div id="popup-entrada" class="vp-overlay">
+    <div class="vp-box">
+        <button class="vp-close" onclick="cerrarPopupEntrada()">&times;</button>
+        <div style="text-align:center;margin-bottom:22px;">
+            <div style="width:54px;height:54px;background:rgba(212,175,55,0.12);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-tools" style="color:#D4AF37;font-size:1.5rem;"></i>
+            </div>
+            <h3 style="color:#fff;font-weight:700;margin-bottom:8px;font-size:1.3rem;line-height:1.3;">¿Necesitas materiales de construcción?</h3>
+            <p style="color:rgba(255,255,255,0.5);font-size:0.88rem;margin:0;">Cotiza gratis — respondemos en menos de 1 hora</p>
+        </div>
+        <form method="POST" action="{{ url_for('publicas.cotizar') }}">
+            <input type="hidden" name="fuente" value="Popup Entrada">
+            <input type="hidden" name="mensaje" value="Cotización desde popup de entrada">
+            <input type="text" name="nombre" placeholder="Tu nombre" required class="vp-input">
+            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input" style="margin-bottom:18px;">
+            <button type="submit" class="vp-btn-green">Quiero mi cotización gratis</button>
+        </form>
+    </div>
+</div>
+
+<!-- POPUP SALIDA (exit intent) -->
+<div id="popup-salida" class="vp-overlay">
+    <div class="vp-box">
+        <button class="vp-close" onclick="cerrarPopupSalida()">&times;</button>
+        <div style="text-align:center;margin-bottom:22px;">
+            <div style="width:54px;height:54px;background:rgba(212,175,55,0.12);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-tag-fill" style="color:#D4AF37;font-size:1.5rem;"></i>
+            </div>
+            <h3 style="color:#fff;font-weight:700;margin-bottom:6px;font-size:1.3rem;">¡Antes de irte!</h3>
+            <p style="color:#D4AF37;font-weight:700;font-size:0.95rem;margin-bottom:4px;">Tenemos el mejor precio de Montería</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:0.86rem;margin:0;">Déjanos tu número y te cotizamos gratis</p>
+        </div>
+        <form method="POST" action="{{ url_for('publicas.cotizar') }}">
+            <input type="hidden" name="fuente" value="Popup Salida">
+            <input type="hidden" name="mensaje" value="Cotización desde popup de salida (exit intent)">
+            <input type="text" name="nombre" placeholder="Tu nombre" required class="vp-input">
+            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input" style="margin-bottom:18px;">
+            <button type="submit" class="vp-btn-gold">Obtener precio ahora</button>
+        </form>
+    </div>
+</div>
+
+<!-- JS de popups (archivo externo, cacheable) -->
+<script src="{{ url_for('static', filename='js/popups.js') }}"></script>
+
+{% endif %}
+
+<!-- Google Ads (al final del body para no bloquear render) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18188659080"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18188659080');
+</script>
+
+</body>
+</html>

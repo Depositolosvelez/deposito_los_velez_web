@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<section class="py-5">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-box-seam-fill text-warning me-2"></i>Gestión de Productos
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.agregar') }}" class="btn btn-warning fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i>Agregar producto
+                </a>
+                <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-box-arrow-right me-1"></i>Salir
+                </a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="GET" action="{{ url_for('admin.lista') }}" class="row g-2 mb-4">
+            <div class="col-12 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary">
+                        <i class="bi bi-search text-warning"></i>
+                    </span>
+                    <input type="text"
+                           name="q"
+                           value="{{ q }}"
+                           class="form-control border-secondary"
+                           placeholder="Buscar por nombre o descripción...">
+                    {% if q or cat %}
+                    <a href="{{ url_for('admin.lista') }}" class="btn btn-outline-secondary" title="Limpiar">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <select name="cat" class="form-select border-secondary" onchange="this.form.submit()">
+                    <option value="">Todas las categorías</option>
+                    {% for c in categorias %}
+                    <option value="{{ c }}" {% if c == cat %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-warning w-100 fw-bold">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </button>
+            </div>
+        </form>
+
+        {% if q or cat %}
+        <p class="text-muted small mb-3">
+            <i class="bi bi-funnel-fill me-1"></i>
+            {{ productos|length }} resultado{{ 's' if productos|length != 1 else '' }}
+            {% if q %} para <strong>"{{ q }}"</strong>{% endif %}
+            {% if cat %} en <strong>{{ cat }}</strong>{% endif %}
+        </p>
+        {% endif %}
+
+        {% if productos %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle shadow-sm rounded overflow-hidden">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in productos %}
+                    <tr>
+                        <td>
+                            {% if p.foto %}
+                                {% if p.foto.startswith('http') %}
+                                <img src="{{ p.foto }}"
+                                     alt="{{ p.nombre }}" width="60" height="60"
+                                     style="object-fit: cover; border-radius: 8px;">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='img/productos/' ~ p.foto) }}"
+                                     alt="{{ p.nombre }}" width="60" height="60"
+                                     style="object-fit: cover; border-radius: 8px;">
+                                {% endif %}
+                            {% else %}
+                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center"
+                                     style="width:60px;height:60px;">
+                                    <i class="bi bi-image text-white fs-4"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="fw-semibold">{{ p.nombre }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ p.categoria }}</span></td>
+                        <td class="fw-bold">${{ "{:,.0f}".format(p.precio).replace(",", ".") }}</td>
+                        <td class="text-muted small" style="max-width: 200px;">
+                            {{ p.descripcion[:80] ~ '...' if p.descripcion and p.descripcion|length > 80 else p.descripcion }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('admin.editar', id=p.id) }}"
+                               class="btn btn-sm btn-outline-warning me-1">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.eliminar', id=p.id) }}"
+                                  class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar {{ p.nombre }}?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <p class="text-muted mt-3 fs-5">No hay productos aún.</p>
+            <a href="{{ url_for('admin.agregar') }}" class="btn btn-warning fw-bold">
+                <i class="bi bi-plus-lg me-1"></i>Agregar el primero
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock contenido %}

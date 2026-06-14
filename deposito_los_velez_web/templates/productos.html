@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% block head_seo %}
+<meta name="description" content="Catálogo de materiales de construcción de segunda en Montería - Puertas de hierro, sanitarios, lavamanos, lavaplatos, cables, arneses y más. Precios desde $70.000 COP.">
+<meta name="keywords" content="puertas hierro segunda mano, sanitarios usados Montería, lavamanos segunda mano, materiales construcción baratos Córdoba">
+{% endblock %}
+
+{% block contenido %}
+
+<!-- ===== HERO ===== -->
+<div style="
+  background:#080a0f;
+  padding:70px 0 50px;
+  border-bottom:3px solid #D4AF37;
+  position:relative;
+  overflow:hidden;
+">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(212,175,55,0.06) 0%, transparent 70%);pointer-events:none;"></div>
+    <div class="container text-center" style="position:relative;">
+
+        <p style="color:#D4AF37; letter-spacing:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:10px;">
+            AHORRA HASTA UN 70% VS PRECIO NUEVO
+        </p>
+
+        <h1 class="fw-bold text-white mb-3" style="font-size:clamp(2rem,5vw,3.2rem); letter-spacing:-1px;">
+            Productos <span style="color:#D4AF37;">Disponibles</span>
+        </h1>
+
+        <p style="color:rgba(255,255,255,0.6); max-width:540px; margin:0 auto 32px; font-size:1rem; line-height:1.7;">
+            Cada artículo es único en medidas y estado. Consulta disponibilidad antes de visitarnos.
+        </p>
+
+        <!-- Buscador -->
+        <form method="GET" action="{{ url_for('publicas.productos') }}"
+              style="max-width:520px; margin:0 auto 28px;">
+            <div style="display:flex; gap:8px; background:rgba(255,255,255,0.06);
+                        border:1.5px solid rgba(212,175,55,0.3); border-radius:50px;
+                        padding:6px 6px 6px 20px;"
+                 onfocusin="this.style.borderColor='#D4AF37'"
+                 onfocusout="this.style.borderColor='rgba(212,175,55,0.3)'">
+                <i class="bi bi-search" style="color:#D4AF37; font-size:1rem; align-self:center;"></i>
+                <input type="text" name="q" value="{{ q }}"
+                       placeholder="Buscar producto..."
+                       autocomplete="off"
+                       style="flex:1; background:transparent; border:none; outline:none;
+                              color:#fff; font-size:0.95rem; min-width:0;">
+                {% if categoria_activa %}
+                <input type="hidden" name="categoria" value="{{ categoria_activa }}">
+                {% endif %}
+                <button type="submit"
+                        style="background:#D4AF37; color:#080a0f; border:none; border-radius:50px;
+                               padding:9px 22px; font-weight:700; font-size:0.88rem; cursor:pointer;
+                               white-space:nowrap; flex-shrink:0;">
+                    Buscar
+                </button>
+            </div>
+            {% if q %}
+            <div class="text-center mt-2">
+                <a href="{{ url_for('publicas.productos', categoria=categoria_activa) if categoria_activa else url_for('publicas.productos') }}"
+                   style="color:rgba(212,175,55,0.7); font-size:0.8rem; text-decoration:none;">
+                    <i class="bi bi-x-circle me-1"></i>Limpiar búsqueda
+                </a>
+            </div>
+            {% endif %}
+        </form>
+
+        <!-- Filtros por grupo -->
+        {% set grupos = [
+            ('🚿 Baños',          ['BAÑOS Y SANITARIOS', 'LAVAPLATOS']),
+            ('🚪 Puertas y Rejas', ['PUERTAS', 'REJAS Y PROTECTORES', 'VENTANAS']),
+            ('🏠 Techos',          ['TECHOS Y CUBIERTAS']),
+            ('⚡ Eléctrico',       ['CABLE ELÉCTRICO', 'GUAYAS EN ALUMINIO', 'GUAYAS EN ACERO', 'HERRAJE ELÉCTRICO', 'TRANSFORMADORES']),
+            ('🔧 Herramienta',     ['HERRAMIENTA Y FERRETERÍA', 'ESCALERAS ESTRUCTURALES', 'ESCALERAS DE ALUMINIO', 'MAQUINARIA Y EQUIPOS']),
+            ('🪟 Tubería',         ['TUBERÍA PVC', 'ACCESORIOS PVC', 'TUBERÍA HIERRO GALVANIZADO']),
+            ('📦 Otros',           ['COCINA', 'HORNOS', 'MALLAS', 'SEGURIDAD Y ALTURA', 'VARIOS']),
+        ] %}
+
+        <div class="filtros-wrapper">
+
+            <!-- Fila 1: botón Todos + grupos -->
+            <div class="filtros-grupos">
+                <a href="{{ url_for('publicas.productos') }}"
+                   class="filtro-grupo-btn{% if not categoria_activa %} fg-activo{% endif %}">
+                    Todos
+                </a>
+                {% for nombre_grupo, subcats in grupos %}
+                    {% set idx = loop.index %}
+                    {% set grupo_activo = categoria_activa in subcats %}
+                    <button class="filtro-grupo-btn{% if grupo_activo %} fg-activo fg-expandido{% endif %}"
+                            onclick="toggleGrupo(this, 'subcats-{{ idx }}')"
+                            data-grupo="subcats-{{ idx }}">
+                        {{ nombre_grupo }}
+                        <span class="fg-chevron">▾</span>
+                    </button>
+                {% endfor %}
+            </div>
+
+            <!-- Fila 2: subcategorías del grupo activo -->
+            {% for nombre_grupo, subcats in grupos %}
+                {% set idx = loop.index %}
+                {% set grupo_activo = categoria_activa in subcats %}
+                {% set ns = namespace(tiene=false) %}
+                {% for cat in subcats %}{% if cat in categorias %}{% set ns.tiene = true %}{% endif %}{% endfor %}
+                {% if ns.tiene %}
+                <div id="subcats-{{ idx }}" class="filtros-subcats{% if grupo_activo %} fs-visible{% endif %}">
+                    {% for cat in subcats %}
+                        {% if cat in categorias %}
+                        <a href="{{ url_for('publicas.productos', categoria=cat) }}"
+                           class="filtro-subcat{% if categoria_activa == cat %} fs-activo{% endif %}">
+                            {{ cat }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== MINI BANNER DE CONFIANZA ===== -->
+<div style="background:#080a0f; border-bottom:1px solid rgba(212,175,55,0.15); padding:18px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 text-center">
+            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
+                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Todos los productos revisados
+            </span>
+            <span style="color:rgba(212,175,55,0.3); font-size:1.2rem; display:none;" class="d-none d-md-inline">|</span>
+            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
+                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Listos para instalar
+            </span>
+            <span style="color:rgba(212,175,55,0.3); font-size:1.2rem;" class="d-none d-md-inline">|</span>
+            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
+                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Despachos a toda la región
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CARDS DE PRODUCTOS ===== -->
+<div style="background:#ffffff; min-height:60vh; padding:50px 0;">
+    <div class="container">
+        {% if q %}
+        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; text-align:center; margin-bottom:24px;">
+            {{ productos|length }} resultado{{ 's' if productos|length != 1 else '' }}
+            para <strong style="color:#D4AF37;">"{{ q }}"</strong>
+        </p>
+        {% endif %}
+
+        {% if productos %}
+        <div class="row g-4">
+            {% for p in productos %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="h-100 d-flex flex-column card-animate position-relative"
+                     style="background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.07); border:1.5px solid #ebebeb; transition:all 0.3s ease;"
+                     onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 45px rgba(212,175,55,0.22)'; this.style.borderColor='#D4AF37';"
+                     onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.07)'; this.style.borderColor='#ebebeb';">
+
+                    <!-- Link invisible que cubre toda la tarjeta -->
+                    <a href="{{ url_for('publicas.producto_detalle', id=p.id) }}"
+                       class="stretched-link text-decoration-none" aria-label="{{ p.nombre }}"></a>
+
+                    <!-- Imagen del producto -->
+                    <div style="height:230px; overflow:hidden; position:relative; background:#f0f0f0;">
+                        {% if p.foto %}
+                        {% if p.foto.startswith('http') %}
+                        <img src="{{ p.foto }}"
+                             alt="{{ p.nombre }}"
+                             style="width:100%; height:100%; object-fit:cover; transition:transform 0.45s ease;"
+                             onmouseover="this.style.transform='scale(1.07)'"
+                             onmouseout="this.style.transform='scale(1)'">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/productos/' ~ p.foto) }}"
+                             alt="{{ p.nombre }}"
+                             style="width:100%; height:100%; object-fit:cover; transition:transform 0.45s ease;"
+                             onmouseover="this.style.transform='scale(1.07)'"
+                             onmouseout="this.style.transform='scale(1)'">
+                        {% endif %}
+                        {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100"
+                             style="background:linear-gradient(135deg,#f5f5f5,#e8e8e8);">
+                            <i class="bi bi-image" style="font-size:3rem; color:#ccc;"></i>
+                        </div>
+                        {% endif %}
+
+                        <!-- Badge categoría (esquina superior izquierda) -->
+                        <span style="
+                          position:absolute; top:12px; left:12px;
+                          background:#080a0f; color:#D4AF37;
+                          padding:5px 14px; border-radius:30px;
+                          font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
+                            {{ p.categoria }}
+                        </span>
+
+                        <!-- Badge DISPONIBLE (esquina superior derecha) -->
+                        <span style="
+                          position:absolute; top:12px; right:12px;
+                          background:#22c55e; color:#fff;
+                          padding:5px 12px; border-radius:30px;
+                          font-size:0.68rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
+                          box-shadow:0 2px 8px rgba(34,197,94,0.4);">
+                            <i class="bi bi-circle-fill me-1" style="font-size:0.45rem; vertical-align:middle;"></i>DISPONIBLE
+                        </span>
+
+                        <!-- Badge MÁS CONSULTADO (primeros 3 productos) -->
+                        {% if loop.index <= 3 %}
+                        <span style="
+                          position:absolute; bottom:0; left:0; right:0;
+                          background:linear-gradient(135deg,#D4AF37,#f5cc5a);
+                          color:#080a0f;
+                          text-align:center;
+                          padding:6px 12px;
+                          font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
+                            ⭐ Más consultado
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contenido -->
+                    <div class="p-4 flex-grow-1 d-flex flex-column">
+                        <h5 class="fw-bold text-capitalize mb-2" style="color:#0E1117; font-size:1.05rem; line-height:1.4;">{{ p.nombre }}</h5>
+
+                        {% if p.descripcion %}
+                        <p class="mb-3" style="color:#6c757d; font-size:0.87rem; line-height:1.65;">
+                            {{ p.descripcion[:110] ~ '…' if p.descripcion|length > 110 else p.descripcion }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Precio -->
+                        <p class="fw-bold mt-auto mb-1" style="color:#D4AF37; font-size:1.9rem; letter-spacing:-1px; line-height:1;">
+                            ${{ "{:,.0f}".format(p.precio).replace(",", ".") }}
+                            {% if p.categoria == 'CABLES' %}
+                            <span class="fw-normal" style="color:#aaa; font-size:0.82rem; letter-spacing:0;"> COP / mt</span>
+                            {% else %}
+                            <span class="fw-normal" style="color:#aaa; font-size:0.82rem; letter-spacing:0;"> COP</span>
+                            {% endif %}
+                        </p>
+                        <p style="color:#bbb; font-size:0.77rem; margin-bottom:0;">Precio negociable · Consulta disponibilidad</p>
+                    </div>
+
+                    <!-- Botón WhatsApp -->
+                    <div class="px-4 pb-4 pt-2" style="position:relative; z-index:2;">
+                        <a href="https://wa.me/573508494766?text=Hola!%20Me%20interesa%20el%20producto:%20{{ p.nombre | urlencode }}"
+                           target="_blank"
+                           class="btn w-100 fw-bold"
+                           style="background:#25D366; color:#fff; border:none; border-radius:14px; font-size:1rem; padding:14px; transition:all 0.3s ease; box-shadow:0 6px 18px rgba(37,211,102,0.35); letter-spacing:0.2px;"
+                           onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 10px 28px rgba(37,211,102,0.5)'; this.style.transform='translateY(-1px)';"
+                           onmouseout="this.style.background='#25D366'; this.style.boxShadow='0 6px 18px rgba(37,211,102,0.35)'; this.style.transform='';">
+                            <i class="bi bi-whatsapp me-2" style="font-size:1.1rem;"></i>Consultar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Sin productos -->
+        <div class="text-center py-5">
+            <i class="bi bi-search" style="font-size:4rem; color:#ccc;"></i>
+            {% if q %}
+            <h4 class="mt-3 fw-bold" style="color:#0E1117;">Sin resultados para "{{ q }}"</h4>
+            <p class="text-muted">Intenta con otro término o contáctanos directamente.</p>
+            <a href="{{ url_for('publicas.productos') }}" class="btn fw-bold px-5 mt-2 me-2"
+               style="background:#e0e0e0; color:#0E1117; border:none; border-radius:30px;">
+                Ver todos
+            </a>
+            {% else %}
+            <h4 class="mt-3 fw-bold" style="color:#0E1117;">No hay productos disponibles aún</h4>
+            <p class="text-muted">El inventario se actualiza constantemente. Contáctanos para consultar.</p>
+            {% endif %}
+            <a href="https://wa.me/573508494766?text=Hola!%20Busco%20un%20material%20específico{% if q %}:%20{{ q | urlencode }}{% endif %}"
+               target="_blank" class="btn fw-bold px-5 mt-2"
+               style="background:#25D366; color:#fff; border:none; border-radius:30px;">
+                <i class="bi bi-whatsapp me-2"></i>Consultar disponibilidad
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ===== SECCIÓN DE CONFIANZA ===== -->
+<div style="background:#080a0f; border-top:1px solid rgba(212,175,55,0.15); border-bottom:1px solid rgba(212,175,55,0.15); padding:50px 0;">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
+                        🏗️
+                    </div>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">+5 años en el mercado</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Experiencia que respalda</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
+                        ⭐
+                    </div>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Clientes en toda la región</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Satisfechos con cada compra</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
+                        🔍
+                    </div>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Cada producto inspeccionado</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Calidad garantizada</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
+                        📦
+                    </div>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Entrega coordinada</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">A tu medida y horario</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CTA FINAL ===== -->
+<div style="background:#080a0f; padding:60px 0; border-top:3px solid #D4AF37; position:relative; overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%, rgba(212,175,55,0.05) 0%, transparent 70%);pointer-events:none;"></div>
+    <div class="container text-center" style="position:relative;">
+        <i class="bi bi-search-heart" style="font-size:2.5rem; color:#D4AF37; opacity:0.7; margin-bottom:16px; display:block;"></i>
+        <h3 class="fw-bold text-white mb-2">¿No encontraste lo que buscas?</h3>
+        <p style="color:rgba(255,255,255,0.5); margin-bottom:28px;">
+            Nuestro inventario cambia cada semana. Escríbenos y te avisamos cuando llegue.
+        </p>
+        <a href="https://wa.me/573508494766?text=Hola!%20Busco%20un%20material%20específico%20y%20quisiera%20consultar%20disponibilidad"
+           target="_blank"
+           class="btn fw-bold px-5 py-3"
+           style="background:#25D366; color:#fff; border:none; border-radius:50px; font-size:1rem; transition:all 0.3s; box-shadow:0 4px 20px rgba(37,211,102,0.3);"
+           onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 6px 28px rgba(37,211,102,0.45)';"
+           onmouseout="this.style.background='#25D366'; this.style.boxShadow='0 4px 20px rgba(37,211,102,0.3)';">
+            <i class="bi bi-whatsapp me-2"></i>Consultar disponibilidad
+        </a>
+    </div>
+</div>
+
+<style>
+/* === FILTROS POR GRUPO === */
+.filtros-wrapper { width: 100%; }
+
+.filtros-grupos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.filtro-grupo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid rgba(212,175,55,0.45);
+    background: transparent;
+    color: #D4AF37;
+    text-decoration: none;
+    transition: all 0.22s;
+    white-space: nowrap;
+}
+.filtro-grupo-btn:hover,
+.filtro-grupo-btn.fg-activo {
+    background: #D4AF37;
+    color: #080a0f;
+    border-color: #D4AF37;
+}
+.fg-chevron {
+    display: inline-block;
+    font-size: 0.75rem;
+    transition: transform 0.22s;
+}
+.fg-expandido .fg-chevron { transform: rotate(180deg); }
+
+.filtros-subcats {
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 14px 16px;
+    background: rgba(212,175,55,0.05);
+    border-radius: 14px;
+    border: 1px solid rgba(212,175,55,0.18);
+    animation: fadeDown 0.2s ease;
+}
+.filtros-subcats.fs-visible { display: flex; }
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.filtro-subcat {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid rgba(212,175,55,0.3);
+    color: rgba(255,255,255,0.8);
+    background: transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.filtro-subcat:hover,
+.filtro-subcat.fs-activo {
+    background: rgba(212,175,55,0.15);
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
+</style>
+
+<script>
+function toggleGrupo(btn, grupoId) {
+    const yaExpandido = btn.classList.contains('fg-expandido');
+
+    // Cerrar todo
+    document.querySelectorAll('.filtro-grupo-btn').forEach(b => {
+        b.classList.remove('fg-activo', 'fg-expandido');
+    });
+    document.querySelectorAll('.filtros-subcats').forEach(d => {
+        d.classList.remove('fs-visible');
+    });
+
+    if (!yaExpandido) {
+        btn.classList.add('fg-activo', 'fg-expandido');
+        const panel = document.getElementById(grupoId);
+        if (panel) panel.classList.add('fs-visible');
+    }
+}
+</script>
+
+{% endblock %}

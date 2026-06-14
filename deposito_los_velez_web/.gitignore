@@ -1,0 +1,15 @@
+# Base de datos local
+instance/
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

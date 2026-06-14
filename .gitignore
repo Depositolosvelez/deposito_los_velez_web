@@ -1,15 +1,41 @@
-# Base de datos local
-instance/
-*.db
+# Entorno y secretos
+deposito_los_velez_web/env
+deposito_los_velez_web/.env
+.env
+env
 
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
-.env
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Base de datos local
+instance/
+*.db
+*.sqlite3
+
+# Imágenes de productos subidas localmente
+deposito_los_velez_web/static/img/productos/
+
+# Entorno virtual
 venv/
 .venv/
+env/
+ENV/
 
-# Sistema operativo
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Claude Code
+.claude/
