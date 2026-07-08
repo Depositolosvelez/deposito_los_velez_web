@@ -13,6 +13,19 @@
 {% block og_imagen %}{{ foto_og }}{% endblock %}
 {% block canonical %}{{ url_for('publicas.producto_detalle_slug', id=producto.id, slug=producto.slug, _external=True) }}{% endblock %}
 
+{% block conversion_event %}
+<script>
+fbq('track', 'ViewContent', {
+    content_name:     '{{ producto.nombre | e }}',
+    content_category: '{{ producto.categoria | e }}',
+    content_ids:      ['{{ producto.id }}'],
+    content_type:     'product',
+    value:            {{ producto.precio if producto.precio > 0 else 0 }},
+    currency:         'COP'
+});
+</script>
+{% endblock %}
+
 {% block contenido %}
 
 <!-- Schema.org Product -->

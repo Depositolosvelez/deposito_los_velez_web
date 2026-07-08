@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block conversion_event %}
+<script>fbq('track', 'Lead', {content_name: 'Formulario de contacto'});</script>
+{% endblock %}
+
 {% block titulo %}¡Gracias! Recibimos tu mensaje | Vélez Depósitos — Montería{% endblock %}
 {% block og_titulo %}¡Mensaje recibido! | Vélez Depósitos y Materiales{% endblock %}
 

@@ -272,6 +272,14 @@
 
 <!-- JS de popups (archivo externo, cacheable) -->
 <script src="{{ url_for('static', filename='js/popups.js') }}"></script>
+<script>
+['popup-entrada','popup-salida'].forEach(function(id){
+    var f = document.querySelector('#'+id+' form');
+    if(f) f.addEventListener('submit', function(){
+        if(typeof fbq !== 'undefined') fbq('track','Lead',{content_name: id});
+    });
+});
+</script>
 
 {% endif %}
 
