@@ -53,12 +53,12 @@ def create_app():
         # CSP: permite recursos propios, Bootstrap CDN, Google (Ads/Maps/Fonts)
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "font-src 'self' https://cdn.jsdelivr.net; "
-            "img-src 'self' data: https://res.cloudinary.com https://www.google.com https://maps.gstatic.com; "
+            "img-src 'self' data: https://res.cloudinary.com https://www.google.com https://maps.gstatic.com https://www.facebook.com; "
             "frame-src https://www.google.com; "
-            "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com;"
+            "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com;"
         )
         return response
 
