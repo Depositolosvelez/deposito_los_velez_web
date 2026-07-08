@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block conversion_event %}
+<script>fbq('track', 'Lead', {content_name: 'Formulario de contacto'});</script>
+{% endblock %}
+
 {% block contenido %}
 <div style="background:#080a0f; min-height:80vh; display:flex; align-items:center; justify-content:center; padding:60px 20px;">
     <div class="text-center" style="max-width:540px;">
