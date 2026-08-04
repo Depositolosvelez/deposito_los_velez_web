@@ -273,6 +273,10 @@ def create_app():
             "UPDATE productos SET unidad_medida='UNIDAD_VARIABLE', precio_min=450000, precio_max=600000 "
             "WHERE categoria='PUERTAS' AND LOWER(nombre) LIKE '%hierro%' AND unidad_medida='UNIDAD'"
         ))
+        db.session.execute(text(
+            "UPDATE productos SET unidad_medida='METRO' "
+            "WHERE categoria='MALLAS' AND LOWER(nombre) LIKE 'malla galvanizada%' AND unidad_medida='UNIDAD'"
+        ))
         db.session.commit()
 
     return app
