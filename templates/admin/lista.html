@@ -77,6 +77,7 @@
                         <th>Foto</th>
                         <th>Nombre</th>
                         <th>Categoría</th>
+                        <th>Unidad</th>
                         <th>Precio</th>
                         <th>Descripción</th>
                         <th class="text-center">Acciones</th>
@@ -105,7 +106,17 @@
                         </td>
                         <td class="fw-semibold">{{ p.nombre }}</td>
                         <td><span class="badge bg-warning text-dark">{{ p.categoria }}</span></td>
-                        <td class="fw-bold">${{ "{:,.0f}".format(p.precio).replace(",", ".") }}</td>
+                        <td>
+                            {% set badge_unidad = {'UNIDAD': 'bg-secondary', 'METRO': 'bg-info text-dark', 'M2': 'bg-primary', 'UNIDAD_VARIABLE': 'bg-danger'} %}
+                            {% set etiqueta_unidad = {'UNIDAD': 'Unidad', 'METRO': 'Metro', 'M2': 'M²', 'UNIDAD_VARIABLE': 'Variable'} %}
+                            <span class="badge {{ badge_unidad.get(p.unidad_medida, 'bg-secondary') }}">
+                                {{ etiqueta_unidad.get(p.unidad_medida, p.unidad_medida) }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">
+                            {{ p.precio_principal() }}
+                            <div class="fw-normal text-muted small">{{ p.precio_sufijo(largo=False) }}</div>
+                        </td>
                         <td class="text-muted small" style="max-width: 200px;">
                             {{ p.descripcion[:80] ~ '...' if p.descripcion and p.descripcion|length > 80 else p.descripcion }}
                         </td>
