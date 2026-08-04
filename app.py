@@ -219,6 +219,62 @@ def create_app():
             db.session.execute(text(f"UPDATE productos SET categoria=:cat WHERE {condicion}"), {"cat": nueva_cat})
         db.session.commit()
 
+        # ================= MIGRACIÓN: UNIDADES DE MEDIDA =================
+        from sqlalchemy import inspect as sa_inspect
+        columnas = [c["name"] for c in sa_inspect(db.engine).get_columns("productos")]
+        if "unidad_medida" not in columnas:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN unidad_medida VARCHAR(20) DEFAULT 'UNIDAD'"))
+        if "precio_min" not in columnas:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_min INTEGER"))
+        if "precio_max" not in columnas:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_max INTEGER"))
+        db.session.commit()
+        db.session.execute(text("UPDATE productos SET unidad_medida='UNIDAD' WHERE unidad_medida IS NULL"))
+        db.session.commit()
+
+        # Unidad de medida por categoría — ver Actualizacion_Unidades_Medida_POS_Web.md, secciones 1 y 4
+        CATEGORIA_UNIDAD = {
+            "ACCESORIOS PVC":             "UNIDAD",
+            "BAÑOS Y SANITARIOS":         "UNIDAD",
+            "CABLE ELÉCTRICO":            "METRO",
+            "COCINA":                     "UNIDAD",
+            "ESCALERAS DE ALUMINIO":      "UNIDAD_VARIABLE",
+            "ESCALERAS ESTRUCTURALES":    "UNIDAD_VARIABLE",
+            "GUAYAS EN ACERO":            "METRO",
+            "GUAYAS EN ALUMINIO":         "METRO",
+            "HERRAJE ELÉCTRICO":          "UNIDAD",
+            "HERRAMIENTA Y FERRETERÍA":   "UNIDAD",
+            "HORNOS":                     "UNIDAD",
+            "LAVAPLATOS":                 "UNIDAD",
+            "MALLAS":                     "UNIDAD",
+            "MAQUINARIA Y EQUIPOS":       "UNIDAD",
+            "PUERTAS":                    "UNIDAD",   # excepción: puertas de hierro (ver abajo)
+            "REJAS Y PROTECTORES":        "M2",
+            "SEGURIDAD Y ALTURA":         "UNIDAD",
+            "TECHOS Y CUBIERTAS":         "UNIDAD",   # excepción: tejas (ver abajo)
+            "TRANSFORMADORES":            "UNIDAD",
+            "TUBERÍA HIERRO GALVANIZADO": "METRO",
+            "TUBERÍA PVC":                "METRO",
+            "VARIOS":                     "UNIDAD",
+            "VENTANAS":                   "M2",
+        }
+        for cat_nombre, unidad in CATEGORIA_UNIDAD.items():
+            db.session.execute(
+                text("UPDATE productos SET unidad_medida=:u WHERE categoria=:c AND unidad_medida='UNIDAD'"),
+                {"u": unidad, "c": cat_nombre},
+            )
+
+        # Excepciones dentro de categorías mixtas (solo se aplican una vez, mientras sigan en 'UNIDAD')
+        db.session.execute(text(
+            "UPDATE productos SET unidad_medida='METRO' "
+            "WHERE categoria='TECHOS Y CUBIERTAS' AND LOWER(nombre) LIKE 'teja%' AND unidad_medida='UNIDAD'"
+        ))
+        db.session.execute(text(
+            "UPDATE productos SET unidad_medida='UNIDAD_VARIABLE', precio_min=450000, precio_max=600000 "
+            "WHERE categoria='PUERTAS' AND LOWER(nombre) LIKE '%hierro%' AND unidad_medida='UNIDAD'"
+        ))
+        db.session.commit()
+
     return app
 
 if __name__ == "__main__":
