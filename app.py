@@ -35,6 +35,22 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        # ================= MIGRACIÓN: COLUMNAS DE UNIDAD DE MEDIDA =================
+        # Debe correr antes de cualquier consulta ORM sobre Producto: el modelo ya
+        # declara unidad_medida/precio_min/precio_max aunque la tabla en producción
+        # todavía no las tenga, y eso rompe hasta un simple Producto.query.count().
+        from sqlalchemy import text, inspect as sa_inspect
+        columnas_productos = [c["name"] for c in sa_inspect(db.engine).get_columns("productos")]
+        if "unidad_medida" not in columnas_productos:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN unidad_medida VARCHAR(20) DEFAULT 'UNIDAD'"))
+        if "precio_min" not in columnas_productos:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_min INTEGER"))
+        if "precio_max" not in columnas_productos:
+            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_max INTEGER"))
+        db.session.commit()
+        db.session.execute(text("UPDATE productos SET unidad_medida='UNIDAD' WHERE unidad_medida IS NULL"))
+        db.session.commit()
+
         # ================= SEED INVENTARIO =================
         from models import Producto
         if Producto.query.count() < 20:
@@ -219,19 +235,7 @@ def create_app():
             db.session.execute(text(f"UPDATE productos SET categoria=:cat WHERE {condicion}"), {"cat": nueva_cat})
         db.session.commit()
 
-        # ================= MIGRACIÓN: UNIDADES DE MEDIDA =================
-        from sqlalchemy import inspect as sa_inspect
-        columnas = [c["name"] for c in sa_inspect(db.engine).get_columns("productos")]
-        if "unidad_medida" not in columnas:
-            db.session.execute(text("ALTER TABLE productos ADD COLUMN unidad_medida VARCHAR(20) DEFAULT 'UNIDAD'"))
-        if "precio_min" not in columnas:
-            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_min INTEGER"))
-        if "precio_max" not in columnas:
-            db.session.execute(text("ALTER TABLE productos ADD COLUMN precio_max INTEGER"))
-        db.session.commit()
-        db.session.execute(text("UPDATE productos SET unidad_medida='UNIDAD' WHERE unidad_medida IS NULL"))
-        db.session.commit()
-
+        # ================= MIGRACIÓN: CLASIFICACIÓN DE UNIDADES DE MEDIDA =================
         # Unidad de medida por categoría — ver Actualizacion_Unidades_Medida_POS_Web.md, secciones 1 y 4
         CATEGORIA_UNIDAD = {
             "ACCESORIOS PVC":             "UNIDAD",
