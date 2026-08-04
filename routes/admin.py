@@ -15,6 +15,30 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def leer_unidad_y_rango(form, errores):
+    """Lee unidad_medida, precio_min y precio_max del formulario y los valida."""
+    unidad_medida = form.get("unidad_medida", "UNIDAD").strip().upper()
+    if unidad_medida not in Producto.UNIDADES_MEDIDA:
+        unidad_medida = "UNIDAD"
+
+    precio_min = None
+    precio_max = None
+    if unidad_medida == "UNIDAD_VARIABLE":
+        precio_min_raw = form.get("precio_min", "").strip()
+        precio_max_raw = form.get("precio_max", "").strip()
+        try:
+            if precio_min_raw:
+                precio_min = int(float(precio_min_raw))
+            if precio_max_raw:
+                precio_max = int(float(precio_max_raw))
+        except ValueError:
+            errores.append("El precio mínimo y máximo deben ser números.")
+        if precio_min is not None and precio_max is not None and precio_min > precio_max:
+            errores.append("El precio mínimo no puede ser mayor que el precio máximo.")
+
+    return unidad_medida, precio_min, precio_max
+
+
 def _cloudinary_configured():
     return all([
         os.environ.get("CLOUDINARY_CLOUD_NAME"),
@@ -164,6 +188,8 @@ def agregar():
         if not categoria:
             errores.append("La categoría es obligatoria.")
 
+        unidad_medida, precio_min, precio_max = leer_unidad_y_rango(request.form, errores)
+
         if errores:
             for e in errores:
                 flash(e, "danger")
@@ -185,14 +211,17 @@ def agregar():
             precio=precio,
             categoria=categoria,
             descripcion=descripcion,
-            foto=nombre_foto
+            foto=nombre_foto,
+            unidad_medida=unidad_medida,
+            precio_min=precio_min,
+            precio_max=precio_max,
         )
         db.session.add(nuevo)
         db.session.commit()
         flash(f"Producto '{nombre}' agregado correctamente.", "success")
         return redirect(url_for("admin.lista"))
 
-    return render_template("admin/formulario.html", producto=None)
+    return render_template("admin/formulario.html", producto=None, unidades_medida=Producto.UNIDADES_MEDIDA)
 
 
 # ================= EDITAR PRODUCTO =================
@@ -211,6 +240,16 @@ def editar(id):
             flash("El precio debe ser un número.", "danger")
             return redirect(url_for("admin.editar", id=id))
 
+        errores = []
+        unidad_medida, precio_min, precio_max = leer_unidad_y_rango(request.form, errores)
+        if errores:
+            for e in errores:
+                flash(e, "danger")
+            return redirect(url_for("admin.editar", id=id))
+        producto.unidad_medida = unidad_medida
+        producto.precio_min    = precio_min
+        producto.precio_max    = precio_max
+
         foto = request.files.get("foto")
         if foto and foto.filename:
             if not allowed_file(foto.filename):
@@ -226,7 +265,7 @@ def editar(id):
         flash(f"Producto '{producto.nombre}' actualizado.", "success")
         return redirect(url_for("admin.lista"))
 
-    return render_template("admin/formulario.html", producto=producto)
+    return render_template("admin/formulario.html", producto=producto, unidades_medida=Producto.UNIDADES_MEDIDA)
 
 
 # ================= ELIMINAR PRODUCTO =================

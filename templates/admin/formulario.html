@@ -55,6 +55,38 @@
                                 </div>
                             </div>
 
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Unidad de medida</label>
+                                    <select name="unidad_medida" id="unidad_medida" class="form-select" onchange="toggleRangoPrecio()">
+                                        {% set unidad_actual = producto.unidad_medida if producto else 'UNIDAD' %}
+                                        {% for valor, etiqueta in unidades_medida.items() %}
+                                        <option value="{{ valor }}" {% if unidad_actual == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row" id="rango-precio-wrapper">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Precio mínimo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="precio_min" class="form-control" step="1" min="0"
+                                               value="{{ producto.precio_min if producto and producto.precio_min else '' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Precio máximo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="precio_max" class="form-control" step="1" min="0"
+                                               value="{{ producto.precio_max if producto and producto.precio_max else '' }}">
+                                    </div>
+                                </div>
+                                <small class="text-muted mb-3">Solo aplica cuando la unidad es "precio variable" — ej: puertas de hierro según medida y grosor.</small>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Descripción</label>
                                 <textarea name="descripcion" class="form-control" rows="3"
@@ -91,4 +123,13 @@
         </div>
     </div>
 </section>
+
+<script>
+function toggleRangoPrecio() {
+    const unidad = document.getElementById('unidad_medida').value;
+    const wrapper = document.getElementById('rango-precio-wrapper');
+    wrapper.style.display = (unidad === 'UNIDAD_VARIABLE') ? '' : 'none';
+}
+toggleRangoPrecio();
+</script>
 {% endblock contenido %}

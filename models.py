@@ -5,6 +5,13 @@ from extensions import db
 class Producto(db.Model):
     __tablename__ = "productos"
 
+    UNIDADES_MEDIDA = {
+        "UNIDAD":          "Por unidad",
+        "METRO":           "Por metro lineal",
+        "M2":              "Por m² (ancho x alto)",
+        "UNIDAD_VARIABLE": "Por unidad — precio variable (rango)",
+    }
+
     id            = db.Column(db.Integer, primary_key=True)
     nombre        = db.Column(db.String(120), nullable=False)
     precio        = db.Column(db.Float, nullable=False)
