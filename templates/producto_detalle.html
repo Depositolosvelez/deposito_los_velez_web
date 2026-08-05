@@ -1,5 +1,18 @@
 {% extends "base.html" %}
 
+{% block titulo %}{{ producto.nombre }} | Vélez Depósitos — Montería{% endblock %}
+
+{% block head_seo %}
+<meta name="description" content="{{ producto.nombre }} de segunda mano en Montería, Córdoba. {{ producto.descripcion[:120] if producto.descripcion else 'Material de construcción revisado y disponible.' }} Consulta por WhatsApp.">
+{% endblock %}
+
+{% block og_type %}product{% endblock %}
+{% block og_titulo %}{{ producto.nombre }} | Vélez Depósitos y Materiales{% endblock %}
+{% block og_descripcion %}{{ producto.descripcion[:160] if producto.descripcion else producto.nombre + ' de segunda mano en Montería. Consulta disponibilidad por WhatsApp.' }}{% endblock %}
+{% set foto_og = producto.foto if producto.foto and producto.foto.startswith('http') else (request.host_url + 'static/img/logo_amarillo.png') %}
+{% block og_imagen %}{{ foto_og }}{% endblock %}
+{% block canonical %}{{ url_for('publicas.producto_detalle_slug', id=producto.id, slug=producto.slug, _external=True) }}{% endblock %}
+
 {% block conversion_event %}
 <script>
 fbq('track', 'ViewContent', {
@@ -13,20 +26,57 @@ fbq('track', 'ViewContent', {
 </script>
 {% endblock %}
 
-{% block head_seo %}
-<meta name="description" content="{{ producto.nombre }} — Vélez Depósitos y Materiales. Material de construcción de segunda en Montería, Córdoba.">
-{% endblock %}
-
 {% block contenido %}
 
-<div style="background:#080a0f; min-height:100vh; padding:60px 0;">
+<!-- Schema.org Product -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ producto.nombre }}",
+  "description": "{{ producto.descripcion | replace('"', '\\"') if producto.descripcion else producto.nombre + ' de segunda mano en Monteria.' }}",
+  "category": "{{ producto.categoria }}",
+  {% if producto.foto and producto.foto.startswith('http') %}
+  "image": "{{ producto.foto }}",
+  {% else %}
+  "image": "{{ request.host_url }}static/img/logo_amarillo.png",
+  {% endif %}
+  "offers": {
+    "@type": "Offer",
+    "availability": "https://schema.org/InStock",
+    "priceCurrency": "COP",
+    {% if producto.precio > 0 %}
+    "price": "{{ producto.precio | int }}",
+    {% else %}
+    "price": "0",
+    {% endif %}
+    "seller": {
+      "@type": "LocalBusiness",
+      "name": "Velez Depositos y Materiales",
+      "telephone": "+573508494766"
+    }
+  }
+}
+</script>
+
+<div style="background:#080a0f; min-height:100vh; padding:40px 0 60px;">
     <div class="container" style="max-width:900px;">
 
-        <!-- Volver -->
-        <a href="/productos" class="text-decoration-none d-inline-flex align-items-center gap-2 mb-4"
-           style="color:#D4AF37; font-size:0.9rem; font-weight:600;">
-            <i class="bi bi-arrow-left"></i> Volver al catálogo
-        </a>
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" style="margin-bottom:20px;">
+            <ol class="breadcrumb" style="background:transparent; padding:0; margin:0; font-size:0.82rem;">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('publicas.index') }}" style="color:#D4AF37; text-decoration:none;">Inicio</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('publicas.productos') }}" style="color:#D4AF37; text-decoration:none;">Productos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}" style="color:#D4AF37; text-decoration:none;">{{ producto.categoria }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" style="color:rgba(255,255,255,0.45);">{{ producto.nombre }}</li>
+            </ol>
+        </nav>
 
         <div class="row g-5 align-items-start">
 
@@ -37,10 +87,12 @@ fbq('track', 'ViewContent', {
                     {% if producto.foto.startswith('http') %}
                     <img src="{{ producto.foto }}"
                          alt="{{ producto.nombre }}"
+                         width="600" height="450"
                          style="width:100%; height:100%; object-fit:cover;">
                     {% else %}
                     <img src="{{ url_for('static', filename='img/productos/' ~ producto.foto) }}"
                          alt="{{ producto.nombre }}"
+                         width="600" height="450"
                          style="width:100%; height:100%; object-fit:cover;">
                     {% endif %}
                     {% else %}
@@ -55,14 +107,15 @@ fbq('track', 'ViewContent', {
             <div class="col-12 col-md-6">
 
                 <!-- Categoría badge -->
-                <span style="background:#D4AF37; color:#080a0f; padding:4px 16px; border-radius:30px;
-                             font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
+                <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}"
+                   style="display:inline-block; background:#D4AF37; color:#080a0f; padding:4px 16px; border-radius:30px;
+                          font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; margin-bottom:16px;">
                     {{ producto.categoria }}
-                </span>
+                </a>
 
                 <!-- Nombre -->
                 <h1 style="color:#fff; font-size:clamp(1.6rem,4vw,2.2rem); font-weight:800;
-                           line-height:1.2; margin-top:16px; margin-bottom:8px;">
+                           line-height:1.2; margin-bottom:20px;">
                     {{ producto.nombre }}
                 </h1>
 
@@ -139,8 +192,16 @@ fbq('track', 'ViewContent', {
                 <!-- Disponibilidad -->
                 <div class="d-flex align-items-center gap-2 mt-3">
                     <span style="width:10px; height:10px; border-radius:50%; background:#22c55e;
-                                 box-shadow:0 0 8px rgba(34,197,94,0.6); display:inline-block;"></span>
+                                 box-shadow:0 0 8px rgba(34,197,94,0.6); display:inline-block; flex-shrink:0;"></span>
                     <span style="color:rgba(255,255,255,0.5); font-size:0.82rem;">Disponible · Barrio Cantaclaro, Montería</span>
+                </div>
+
+                <!-- Volver a categoría -->
+                <div style="margin-top:28px; padding-top:20px; border-top:1px solid rgba(212,175,55,0.15);">
+                    <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}"
+                       style="color:rgba(212,175,55,0.7); font-size:0.85rem; text-decoration:none; font-weight:600;">
+                        <i class="bi bi-arrow-left me-1"></i>Ver más en {{ producto.categoria }}
+                    </a>
                 </div>
 
             </div>

@@ -1,7 +1,34 @@
 {% extends "base.html" %}
+
+{% block titulo %}
+    {%- if categoria_activa -%}
+        {{ categoria_activa }} de segunda en Montería | Vélez Depósitos
+    {%- elif q -%}
+        Búsqueda: {{ q }} | Vélez Depósitos — Montería
+    {%- else -%}
+        Catálogo de materiales de construcción de segunda | Vélez Depósitos
+    {%- endif -%}
+{% endblock %}
+
+{% block og_titulo %}
+    {%- if categoria_activa -%}
+        {{ categoria_activa }} de segunda mano en Montería | Vélez Depósitos
+    {%- else -%}
+        Catálogo de materiales de construcción | Vélez Depósitos — Montería
+    {%- endif -%}
+{% endblock %}
+
+{% block og_descripcion %}Compra materiales de demolición y construcción de segunda en Montería. Puertas de hierro, sanitarios, cables de cobre, rejas y más a precios hasta 70% más bajos.{% endblock %}
+
 {% block head_seo %}
 <meta name="description" content="Catálogo de materiales de construcción de segunda en Montería - Puertas de hierro, sanitarios, lavamanos, lavaplatos, cables, arneses y más. Precios desde $70.000 COP.">
 <meta name="keywords" content="puertas hierro segunda mano, sanitarios usados Montería, lavamanos segunda mano, materiales construcción baratos Córdoba">
+{% if paginacion.has_next %}
+<link rel="next" href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.next_num) }}">
+{% endif %}
+{% if paginacion.has_prev %}
+<link rel="prev" href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.prev_num) }}">
+{% endif %}
 {% endblock %}
 
 {% block contenido %}
@@ -141,12 +168,21 @@
 <!-- ===== CARDS DE PRODUCTOS ===== -->
 <div style="background:#ffffff; min-height:60vh; padding:50px 0;">
     <div class="container">
-        {% if q %}
+        <!-- Contador de resultados -->
         <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; text-align:center; margin-bottom:24px;">
-            {{ productos|length }} resultado{{ 's' if productos|length != 1 else '' }}
-            para <strong style="color:#D4AF37;">"{{ q }}"</strong>
+            {% if q %}
+                <strong style="color:#D4AF37;">{{ total }}</strong>
+                resultado{{ 's' if total != 1 else '' }} para
+                <strong style="color:#D4AF37;">"{{ q }}"</strong>
+            {% elif categoria_activa %}
+                <strong style="color:#D4AF37;">{{ total }}</strong>
+                producto{{ 's' if total != 1 else '' }} en
+                <strong style="color:#D4AF37;">{{ categoria_activa }}</strong>
+            {% else %}
+                <strong style="color:#D4AF37;">{{ total }}</strong>
+                producto{{ 's' if total != 1 else '' }} disponibles
+            {% endif %}
         </p>
-        {% endif %}
 
         {% if productos %}
         <div class="row g-4">
@@ -154,11 +190,11 @@
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="h-100 d-flex flex-column card-animate position-relative"
                      style="background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.07); border:1.5px solid #ebebeb; transition:all 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 45px rgba(212,175,55,0.22)'; this.style.borderColor='#D4AF37';"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(212,175,55,0.2)'; this.style.borderColor='#D4AF37';"
                      onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.07)'; this.style.borderColor='#ebebeb';">
 
                     <!-- Link invisible que cubre toda la tarjeta -->
-                    <a href="{{ url_for('publicas.producto_detalle', id=p.id) }}"
+                    <a href="{{ url_for('publicas.producto_detalle_slug', id=p.id, slug=p.slug) }}"
                        class="stretched-link text-decoration-none" aria-label="{{ p.nombre }}"></a>
 
                     <!-- Imagen del producto -->
@@ -167,14 +203,18 @@
                         {% if p.foto.startswith('http') %}
                         <img src="{{ p.foto }}"
                              alt="{{ p.nombre }}"
+                             width="400" height="230"
+                             loading="lazy"
                              style="width:100%; height:100%; object-fit:cover; transition:transform 0.45s ease;"
-                             onmouseover="this.style.transform='scale(1.07)'"
+                             onmouseover="this.style.transform='scale(1.04)'"
                              onmouseout="this.style.transform='scale(1)'">
                         {% else %}
                         <img src="{{ url_for('static', filename='img/productos/' ~ p.foto) }}"
                              alt="{{ p.nombre }}"
+                             width="400" height="230"
+                             loading="lazy"
                              style="width:100%; height:100%; object-fit:cover; transition:transform 0.45s ease;"
-                             onmouseover="this.style.transform='scale(1.07)'"
+                             onmouseover="this.style.transform='scale(1.04)'"
                              onmouseout="this.style.transform='scale(1)'">
                         {% endif %}
                         {% else %}
@@ -254,6 +294,51 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Paginación -->
+        {% if paginacion.pages > 1 %}
+        <nav aria-label="Paginación de productos" class="mt-5">
+            <ul class="pagination justify-content-center gap-2" style="flex-wrap:wrap;">
+
+                {% if paginacion.has_prev %}
+                <li class="page-item">
+                    <a class="page-link fw-bold"
+                       href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.prev_num) }}"
+                       style="background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4); border-radius:10px; padding:10px 18px;">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in paginacion.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if num %}
+                    <li class="page-item {% if num == paginacion.page %}active{% endif %}">
+                        <a class="page-link fw-bold"
+                           href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=num) }}"
+                           style="{% if num == paginacion.page %}background:#D4AF37; color:#080a0f; border-color:#D4AF37;{% else %}background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4);{% endif %} border-radius:10px; padding:10px 16px;">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" style="background:transparent; border:none; color:rgba(212,175,55,0.3);">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if paginacion.has_next %}
+                <li class="page-item">
+                    <a class="page-link fw-bold"
+                       href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.next_num) }}"
+                       style="background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4); border-radius:10px; padding:10px 18px;">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+        {% endif %}
 
         {% else %}
         <!-- Sin productos -->

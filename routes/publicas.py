@@ -5,6 +5,8 @@ from extensions import db
 
 publicas_bp = Blueprint("publicas", __name__)
 
+POR_PAGINA = 24
+
 
 @publicas_bp.route("/")
 def index():
@@ -17,6 +19,7 @@ def productos():
     """Catálogo de productos — carga desde la base de datos"""
     q         = request.args.get("q", "").strip()
     categoria = request.args.get("categoria", "").strip()
+    page      = request.args.get("page", 1, type=int)
 
     query = Producto.query
     if q:
@@ -29,10 +32,19 @@ def productos():
     if categoria:
         query = query.filter_by(categoria=categoria)
 
-    lista      = query.order_by(Producto.nombre).all()
+    paginacion = query.order_by(Producto.nombre).paginate(
+        page=page, per_page=POR_PAGINA, error_out=False
+    )
     categorias = [r[0] for r in Producto.query.with_entities(Producto.categoria).distinct().all()]
-    return render_template("productos.html", productos=lista, categorias=categorias,
-                           categoria_activa=categoria, q=q)
+    return render_template(
+        "productos.html",
+        productos=paginacion.items,
+        paginacion=paginacion,
+        categorias=categorias,
+        categoria_activa=categoria,
+        q=q,
+        total=paginacion.total,
+    )
 
 
 @publicas_bp.route("/contacto", methods=["GET", "POST"])
@@ -94,7 +106,23 @@ def cotizar():
 
 @publicas_bp.route("/productos/<int:id>")
 def producto_detalle(id):
+    """Ruta legacy — redirige a la URL canónica con slug."""
     producto = Producto.query.get_or_404(id)
+    return redirect(
+        url_for("publicas.producto_detalle_slug", id=id, slug=producto.slug),
+        code=301
+    )
+
+
+@publicas_bp.route("/productos/<int:id>/<slug>")
+def producto_detalle_slug(id, slug):
+    """URL canónica SEO-friendly: /productos/12/puerta-de-hierro-frontal"""
+    producto = Producto.query.get_or_404(id)
+    if slug != producto.slug:
+        return redirect(
+            url_for("publicas.producto_detalle_slug", id=id, slug=producto.slug),
+            code=301
+        )
     return render_template("producto_detalle.html", producto=producto)
 
 

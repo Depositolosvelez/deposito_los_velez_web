@@ -38,6 +38,12 @@
     if (salEl) salEl.style.display = 'none';
   };
 
+  // ===== CHAT FLOTANTE (izquierda) =====
+  window.toggleChat = function () {
+    var p = document.getElementById('chat-panel');
+    if (p) p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+  };
+
   // ===== CERRAR POPUPS AL CLIC EN EL OVERLAY =====
   document.addEventListener('click', function (e) {
     [entEl, salEl].forEach(function (el) {

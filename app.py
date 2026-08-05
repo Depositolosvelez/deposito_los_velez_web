@@ -2,14 +2,30 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 from extensions import db
+
+# Carga .env y también el archivo llamado 'env' (sin punto) que usa este proyecto
 load_dotenv()
+load_dotenv('env', override=False)
+
 
 def create_app():
     app = Flask(__name__)
     # ================= CONFIGURACIÓN =================
-    app.config["SECRET_KEY"]        = os.environ.get("SECRET_KEY", "cambia-esto-en-produccion")
-    app.config["DEBUG"]             = os.environ.get("DEBUG", "false").lower() == "true"
-    app.config["TEMPLATES_AUTO_RELOAD"] = True
+    is_debug = os.environ.get("DEBUG", os.environ.get("FLASK_DEBUG", "0")) in ("true", "1")
+
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        if is_debug:
+            secret_key = "dev-only-insecure-key-never-use-in-prod"
+            print("ADVERTENCIA: SECRET_KEY no definida. Usando clave de desarrollo insegura.")
+        else:
+            raise RuntimeError(
+                "SECRET_KEY no está definida. Agrega SECRET_KEY=<valor-aleatorio> al archivo env"
+            )
+    app.config["SECRET_KEY"] = secret_key
+    app.config["DEBUG"]                 = is_debug
+    app.config["TEMPLATES_AUTO_RELOAD"] = is_debug  # solo recarga templates en desarrollo
+
     app.config["SQLALCHEMY_DATABASE_URI"]        = os.environ.get("DATABASE_URL", "sqlite:///deposito.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB máximo por archivo
@@ -30,6 +46,16 @@ def create_app():
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"]        = "DENY"
         response.headers["X-XSS-Protection"]       = "1; mode=block"
+        # CSP: permite recursos propios, Bootstrap CDN, Google (Ads/Maps/Fonts), Meta Pixel
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "font-src 'self' https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https://res.cloudinary.com https://www.google.com https://maps.gstatic.com https://www.facebook.com; "
+            "frame-src https://www.google.com; "
+            "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://www.google.com;"
+        )
         return response
     # ================= CREAR TABLAS =================
     with app.app_context():

@@ -1,9 +1,26 @@
+import re
+import unicodedata
 from datetime import datetime
 from extensions import db
 
 
+def slugify(texto):
+    """Genera slug URL-safe desde texto en español."""
+    texto = texto.lower().strip()
+    texto = unicodedata.normalize('NFD', texto)
+    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+    texto = re.sub(r'[^\w\s-]', '', texto)
+    texto = re.sub(r'[\s_]+', '-', texto)
+    texto = re.sub(r'-+', '-', texto)
+    return texto.strip('-')
+
+
 class Producto(db.Model):
     __tablename__ = "productos"
+    __table_args__ = (
+        db.Index('ix_productos_categoria', 'categoria'),
+        db.Index('ix_productos_nombre', 'nombre'),
+    )
 
     UNIDADES_MEDIDA = {
         "UNIDAD":          "Por unidad",
@@ -21,6 +38,10 @@ class Producto(db.Model):
     unidad_medida = db.Column(db.String(20), nullable=False, default="UNIDAD")  # UNIDAD | METRO | M2 | UNIDAD_VARIABLE
     precio_min    = db.Column(db.Integer, nullable=True)  # solo aplica a UNIDAD_VARIABLE
     precio_max    = db.Column(db.Integer, nullable=True)  # solo aplica a UNIDAD_VARIABLE
+
+    @property
+    def slug(self):
+        return slugify(self.nombre)
 
     def __repr__(self):
         return f"<Producto {self.nombre}>"

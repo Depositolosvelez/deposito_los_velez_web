@@ -20,10 +20,14 @@
     <!-- End Meta Pixel Code -->
 
     <meta charset="UTF-8">
-    <title>Vélez Depósitos y Materiales</title>
+    <title>{% block titulo %}Vélez Depósitos y Materiales{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    <!-- Preconnect para acelerar carga de CDNs -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
 
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -34,16 +38,54 @@
     <!-- Estilos propios -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+    <!-- SEO: meta description, keywords y Open Graph -->
     {% block head_seo %}{% endblock %}
     <meta name="google-site-verification" content="zgcOd1ycFWNsDDxo71Xd5n_PDSyDZog1iYW-7tRaFTk" />
 
-    <!-- Google Ads -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18188659080"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-18188659080');
+    <!-- Open Graph (compartir en redes y WhatsApp) -->
+    <meta property="og:type"        content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name"   content="Vélez Depósitos y Materiales">
+    <meta property="og:locale"      content="es_CO">
+    <meta property="og:title"       content="{% block og_titulo %}Vélez Depósitos y Materiales | Montería{% endblock %}">
+    <meta property="og:description" content="{% block og_descripcion %}Materiales de demolición y construcción de segunda en Montería, Córdoba. Puertas de hierro, sanitarios, cables, rejas y más.{% endblock %}">
+    <meta property="og:image"       content="{% block og_imagen %}{{ request.host_url }}static/img/logo_amarillo.png{% endblock %}">
+    <meta property="og:url"         content="{{ request.url }}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Schema.org LocalBusiness -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Vélez Depósitos y Materiales",
+      "description": "Materiales de demolición y construcción de segunda mano en Montería, Córdoba. Puertas de hierro, sanitarios, cables de cobre, rejas y más.",
+      "url": "https://velezdepositos.com.co",
+      "telephone": "+573508494766",
+      "email": "depositolosvelez@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Barrio Cantaclaro, diagonal a urgencias CAMU Viejo",
+        "addressLocality": "Montería",
+        "addressRegion": "Córdoba",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 8.73630,
+        "longitude": -75.86776
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        "opens": "08:00",
+        "closes": "18:00"
+      },
+      "priceRange": "$$",
+      "image": "https://velezdepositos.com.co/static/img/logo_amarillo.png",
+      "sameAs": ["https://wa.me/573508494766"]
+    }
     </script>
 </head>
 <body>
@@ -71,7 +113,7 @@
 
         <!-- LOGO -->
         <a class="navbar-brand" href="/">
-            <img src="{{ url_for('static', filename='img/logo_amarillo.png') }}" alt="Vélez Depósitos y Materiales" height="40">
+            <img src="{{ url_for('static', filename='img/logo_amarillo.png') }}" alt="Vélez Depósitos y Materiales" height="40" width="auto">
         </a>
 
         <!-- BOTÓN MÓVIL -->
@@ -143,23 +185,13 @@
 
 {% block conversion_event %}{% endblock %}
 
-<!-- Animaciones de tarjetas -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.card-animate');
-    cards.forEach((card, index) => {
-      card.style.animationDelay = `${index * 0.15}s`;
-      card.classList.add('fade-in-up');
-    });
-  });
-</script>
-
-<!-- CHAT FLOTANTE WHATSAPP -->
-<a href="https://wa.me/573508494766?text=Hola!%20Quisiera%20consultar%20sobre%20sus%20materiales" 
-   target="_blank" 
-   id="whatsapp-chat" 
-   title="Chatear por WhatsApp">
-    <img src="{{ url_for('static', filename='img/whatsapp_icon.png') }}" alt="WhatsApp">
+<!-- Botón WhatsApp flotante -->
+<a href="https://wa.me/573508494766?text=Hola!%20Quisiera%20consultar%20sobre%20sus%20materiales"
+   target="_blank"
+   id="whatsapp-chat"
+   title="Chatear por WhatsApp"
+   aria-label="Consultar por WhatsApp">
+    <img src="{{ url_for('static', filename='img/whatsapp_icon.png') }}" alt="WhatsApp" width="60" height="60">
 </a>
 
 <style>
@@ -189,7 +221,7 @@
 
 {% if not request.path.startswith('/admin') and request.path != '/gracias' %}
 
-<!-- ===== POPUPS Y CHAT FLOTANTE ===== -->
+<!-- Estilos para popups -->
 <style>
 .vp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9000;align-items:center;justify-content:center;padding:20px;}
 .vp-box{background:#0E1117;border:1px solid rgba(212,175,55,0.4);border-radius:20px;padding:36px 32px;max-width:420px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
@@ -202,7 +234,7 @@
 .vp-btn-gold{width:100%;background:#D4AF37;color:#080a0f;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;cursor:pointer;}
 </style>
 
-<!-- POPUP ENTRADA (8 segundos) -->
+<!-- POPUP ENTRADA (35 segundos) -->
 <div id="popup-entrada" class="vp-overlay">
     <div class="vp-box">
         <button class="vp-close" onclick="cerrarPopupEntrada()">&times;</button>
@@ -272,68 +304,27 @@
     </button>
 </div>
 
+<!-- JS de popups y chat flotante (archivo externo, cacheable) -->
+<script src="{{ url_for('static', filename='js/popups.js') }}"></script>
 <script>
-(function(){
-    // TOP BAR
-    var tb = document.getElementById('top-bar');
-    if (tb && localStorage.getItem('topbar_cerrada')) tb.style.display = 'none';
-    window.cerrarTopBar = function() {
-        if (tb) tb.style.display = 'none';
-        localStorage.setItem('topbar_cerrada', '1');
-    };
-
-    // POPUP ENTRADA — aparece a los 8s, una sola vez por navegador
-    var entEl = document.getElementById('popup-entrada');
-    if (entEl && !localStorage.getItem('popup_entrada_ok')) {
-        setTimeout(function() {
-            entEl.style.display = 'flex';
-            localStorage.setItem('popup_entrada_ok', '1');
-        }, 8000);
-        var entForm = entEl.querySelector('form');
-        if (entForm) entForm.addEventListener('submit', function() {
-            localStorage.setItem('popup_entrada_ok', '1');
-        });
-    }
-    window.cerrarPopupEntrada = function() {
-        if (entEl) entEl.style.display = 'none';
-        localStorage.setItem('popup_entrada_ok', '1');
-    };
-
-    // POPUP SALIDA — exit intent, una vez por sesión, solo desktop
-    var salEl = document.getElementById('popup-salida');
-    document.addEventListener('mouseleave', function(e) {
-        if (e.clientY < 5 && salEl && !sessionStorage.getItem('popup_salida_ok')) {
-            salEl.style.display = 'flex';
-            sessionStorage.setItem('popup_salida_ok', '1');
-        }
+['popup-entrada','popup-salida'].forEach(function(id){
+    var f = document.querySelector('#'+id+' form');
+    if(f) f.addEventListener('submit', function(){
+        if(typeof fbq !== 'undefined') fbq('track','Lead',{content_name: id});
     });
-    window.cerrarPopupSalida = function() {
-        if (salEl) salEl.style.display = 'none';
-    };
-
-    // CHAT FLOTANTE
-    window.toggleChat = function() {
-        var p = document.getElementById('chat-panel');
-        if (p) p.style.display = (p.style.display === 'block') ? 'none' : 'block';
-    };
-
-    // Cerrar popups al clic en el overlay
-    document.addEventListener('click', function(e) {
-        [entEl, salEl].forEach(function(el) {
-            if (el && e.target === el) el.style.display = 'none';
-        });
-    });
-
-    // Meta Pixel: Lead al enviar cualquier popup
-    ['popup-entrada','popup-salida'].forEach(function(id){
-        var f = document.querySelector('#'+id+' form');
-        if(f) f.addEventListener('submit', function(){
-            if(typeof fbq !== 'undefined') fbq('track','Lead',{content_name: id});
-        });
-    });
-})();
+});
 </script>
 
 {% endif %}
+
+<!-- Google Ads (al final del body para no bloquear render) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18188659080"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18188659080');
+</script>
+
 </body>
 </html>
