@@ -222,7 +222,6 @@ def create_app():
                 ("Mesón con estufa integrada",            "LAVAPLATOS"),
                 # MALLAS
                 ("Malla gallinero",                       "MALLAS"),
-                ("Malla galvanizada cerramiento",         "MALLAS"),
                 # HERRAJE ELÉCTRICO
                 ("Breakers de luz",                       "HERRAJE ELÉCTRICO"),
                 # VARIOS
@@ -303,10 +302,22 @@ def create_app():
             "UPDATE productos SET unidad_medida='UNIDAD_VARIABLE', precio_min=450000, precio_max=600000 "
             "WHERE categoria='PUERTAS' AND LOWER(nombre) LIKE '%hierro%' AND unidad_medida='UNIDAD'"
         ))
-        db.session.execute(text(
-            "UPDATE productos SET unidad_medida='METRO' "
-            "WHERE categoria='MALLAS' AND LOWER(nombre) LIKE 'malla galvanizada%' AND unidad_medida='UNIDAD'"
-        ))
+        db.session.commit()
+
+        # ================= MIGRACIÓN: MALLAS NUEVAS DE CERCAR =================
+        # La malla galvanizada de cerramiento ya no se vende; la reemplazan rollos de 10 m de malla nueva.
+        db.session.execute(text("DELETE FROM productos WHERE categoria='MALLAS' AND LOWER(nombre) LIKE 'malla galvanizada%'"))
+        mallas_cercar = [
+            ("Malla nueva de cercar 1,50 m - rollo 10 m", 300000, "1,50"),
+            ("Malla nueva de cercar 1,80 m - rollo 10 m", 350000, "1,80"),
+            ("Malla nueva de cercar 2 m - rollo 10 m",    400000, "2"),
+        ]
+        for nombre, precio, alto in mallas_cercar:
+            if not Producto.query.filter_by(nombre=nombre).first():
+                db.session.add(Producto(
+                    nombre=nombre, precio=precio, categoria="MALLAS", unidad_medida="UNIDAD",
+                    descripcion=f"Malla nueva para cercar de {alto} m de alto. Se vende por rollo de 10 metros.",
+                ))
         db.session.commit()
 
     return app
