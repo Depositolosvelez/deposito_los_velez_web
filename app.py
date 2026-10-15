@@ -327,6 +327,7 @@ def create_app():
             # El portón quedó atrapado en el rango de puertas de hierro; su precio real está en la descripción
             "UPDATE productos SET unidad_medida='UNIDAD', precio=2300000, precio_min=NULL, precio_max=NULL "
             "WHERE id=23 AND unidad_medida='UNIDAD_VARIABLE'",
+            "UPDATE productos SET precio=100000 WHERE id=76 AND precio=80000",  # Eslinga de posicionamiento
         ]
         for sql in sync_pos:
             db.session.execute(text(sql))
@@ -336,6 +337,40 @@ def create_app():
                 nombre="Teja de zinc 2 m", precio=20000, categoria="TECHOS Y CUBIERTAS", unidad_medida="UNIDAD",
                 descripcion=zinc3.descripcion, foto=zinc3.foto,
             ))
+
+        # Productos que estaban en el catálogo del POS pero no en la web
+        faltantes_pos = [
+            # (nombre, precio, categoria, unidad_medida, precio_min, precio_max, descripcion)
+            ("Cable de cobre #6", 9000, "CABLE ELÉCTRICO", "METRO", None, None,
+             "Cable de cobre calibre #6 para acometidas y circuitos de alta carga. Material de segunda, revisado y en buen estado. Se vende por metro."),
+            ("Cable de cobre #16", 1500, "CABLE ELÉCTRICO", "METRO", None, None,
+             "Cable de cobre calibre #16 para iluminación y circuitos de baja carga. Material de segunda, revisado y en buen estado. Se vende por metro."),
+            ("Trenza de aluminio 1/0 nueva", 20000, "GUAYAS EN ALUMINIO", "METRO", None, None,
+             "Trenza de aluminio calibre 1/0 NUEVA, más gruesa que la #2, para acometidas y redes eléctricas de mayor capacidad. Se vende por metro."),
+            ("Trenza de aluminio #2 nueva", 15000, "GUAYAS EN ALUMINIO", "METRO", None, None,
+             "Trenza de aluminio calibre #2 NUEVA para acometidas y redes eléctricas. Se vende por metro."),
+            ("Trenza de aluminio #4 de segunda", 8000, "GUAYAS EN ALUMINIO", "METRO", None, None,
+             "Trenza de aluminio calibre #4 para acometidas y redes eléctricas. Material de segunda, revisado y en buen estado. Se vende por metro."),
+            ("Canaleta de agua PVC", 25000, "TECHOS Y CUBIERTAS", "METRO", None, None,
+             "Canaleta de agua en PVC para recoger el agua lluvia del techo. Material de segunda, revisado y en buen estado. Se vende por metro."),
+            ("Teja eternit #8", 35000, "TECHOS Y CUBIERTAS", "UNIDAD", None, None,
+             "Teja de fibrocemento (eternit) #8 para techos de casas, ramadas y bodegas. Material de segunda, revisado y en buen estado. Precio por hoja."),
+            ("Canasta plástica", 20000, "VARIOS", "UNIDAD", None, None,
+             "Canasta plástica resistente para carga, almacenamiento y transporte de materiales. Material de segunda en buen estado."),
+        ] + [
+            (f"Escalera de aluminio tijera {pasos} pasos", precio, "ESCALERAS DE ALUMINIO", "UNIDAD_VARIABLE", pmin, pmax,
+             f"Escalera tijera de aluminio de {pasos} pasos, liviana y resistente para mantenimiento, pintura y obra. Material de segunda, revisado y en buen estado.")
+            for pasos, precio, pmin, pmax in [
+                (3, 250000, None, None), (4, 300000, None, None), (5, 350000, None, None), (6, 370000, None, None),
+                (7, 400000, None, None), (8, 450000, None, None), (9, 500000, None, None), (10, 550000, 500000, 550000),
+            ]
+        ]
+        for nombre, precio, categoria, unidad, pmin, pmax, descripcion in faltantes_pos:
+            if not Producto.query.filter_by(nombre=nombre).first():
+                db.session.add(Producto(
+                    nombre=nombre, precio=precio, categoria=categoria, unidad_medida=unidad,
+                    precio_min=pmin, precio_max=pmax, descripcion=descripcion,
+                ))
         db.session.commit()
 
         # ================= MIGRACIÓN: MALLAS NUEVAS DE CERCAR =================
