@@ -296,12 +296,46 @@ def create_app():
         # Excepciones dentro de categorías mixtas (solo se aplican una vez, mientras sigan en 'UNIDAD')
         db.session.execute(text(
             "UPDATE productos SET unidad_medida='METRO' "
-            "WHERE categoria='TECHOS Y CUBIERTAS' AND LOWER(nombre) LIKE 'teja%' AND unidad_medida='UNIDAD'"
+            "WHERE categoria='TECHOS Y CUBIERTAS' AND LOWER(nombre) LIKE 'teja arquitect%' AND unidad_medida='UNIDAD'"
         ))
         db.session.execute(text(
             "UPDATE productos SET unidad_medida='UNIDAD_VARIABLE', precio_min=450000, precio_max=600000 "
-            "WHERE categoria='PUERTAS' AND LOWER(nombre) LIKE '%hierro%' AND unidad_medida='UNIDAD'"
+            "WHERE categoria='PUERTAS' AND LOWER(nombre) LIKE 'puerta%hierro%' AND unidad_medida='UNIDAD'"
         ))
+        db.session.commit()
+
+        # ================= MIGRACIÓN: PRECIOS SINCRONIZADOS CON EL POS (2026-10-15) =================
+        # Cada UPDATE exige el valor anterior en el WHERE: se aplica una sola vez y no pisa
+        # cambios hechos después desde el panel admin.
+        sync_pos = [
+            "UPDATE productos SET precio=10000 WHERE id=49 AND precio=4000",   # Codo PVC
+            "UPDATE productos SET precio=2500 WHERE id=70 AND precio=25000",   # Guaya acerada 1/4"
+            "UPDATE productos SET precio=12000 WHERE id=68 AND precio=10000",  # Trenza aluminio #2 segunda
+            "UPDATE productos SET precio=10000 WHERE id=136 AND precio=9000",  # Trenza #4 nueva
+            # Eternit se vende por hoja, no por metro
+            "UPDATE productos SET precio=15000, unidad_medida='UNIDAD' WHERE id=33 AND precio=25000",
+            "UPDATE productos SET precio=25000, unidad_medida='UNIDAD' WHERE id=34 AND precio=60000",
+            # Zinc: por hoja, separado en 3 m y 2 m como en el POS
+            "UPDATE productos SET nombre='Teja de zinc 3 m', precio=25000, unidad_medida='UNIDAD' "
+            "WHERE id=29 AND precio=8000",
+            "UPDATE productos SET precio=450000, precio_min=400000 "
+            "WHERE id=18 AND unidad_medida='UNIDAD_VARIABLE' AND precio_min=450000",  # Puerta hierro patio
+            "UPDATE productos SET precio=250000, precio_min=250000, precio_max=550000 "
+            "WHERE id=94 AND precio_min IS NULL",  # Escalera aluminio 3 a 10 pasos
+            "UPDATE productos SET unidad_medida='UNIDAD_VARIABLE', precio=120000, precio_min=120000, precio_max=280000 "
+            "WHERE id=5 AND unidad_medida='UNIDAD'",  # Orinal pequeño a grande
+            # El portón quedó atrapado en el rango de puertas de hierro; su precio real está en la descripción
+            "UPDATE productos SET unidad_medida='UNIDAD', precio=2300000, precio_min=NULL, precio_max=NULL "
+            "WHERE id=23 AND unidad_medida='UNIDAD_VARIABLE'",
+        ]
+        for sql in sync_pos:
+            db.session.execute(text(sql))
+        zinc3 = Producto.query.filter_by(nombre="Teja de zinc 3 m").first()
+        if zinc3 and not Producto.query.filter_by(nombre="Teja de zinc 2 m").first():
+            db.session.add(Producto(
+                nombre="Teja de zinc 2 m", precio=20000, categoria="TECHOS Y CUBIERTAS", unidad_medida="UNIDAD",
+                descripcion=zinc3.descripcion, foto=zinc3.foto,
+            ))
         db.session.commit()
 
         # ================= MIGRACIÓN: MALLAS NUEVAS DE CERCAR =================
