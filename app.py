@@ -328,6 +328,11 @@ def create_app():
             "UPDATE productos SET unidad_medida='UNIDAD', precio=2300000, precio_min=NULL, precio_max=NULL "
             "WHERE id=23 AND unidad_medida='UNIDAD_VARIABLE'",
             "UPDATE productos SET precio=100000 WHERE id=76 AND precio=80000",  # Eslinga de posicionamiento
+            # La malla eslabonada repetía las mallas nuevas de cercar: les cede su foto y se elimina
+            "UPDATE productos SET foto=(SELECT foto FROM productos WHERE nombre='Malla eslabonada nueva galvanizada - rollo 10 m') "
+            "WHERE nombre LIKE 'Malla nueva de cercar%' AND foto IS NULL "
+            "AND EXISTS (SELECT 1 FROM productos WHERE nombre='Malla eslabonada nueva galvanizada - rollo 10 m')",
+            "DELETE FROM productos WHERE nombre='Malla eslabonada nueva galvanizada - rollo 10 m'",
         ]
         for sql in sync_pos:
             db.session.execute(text(sql))
