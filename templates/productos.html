@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% from "_iconos.html" import icono %}
 
 {% block titulo %}
-    {%- if categoria_activa -%}
-        {{ categoria_activa }} de segunda en Montería | Vélez Depósitos
+    {%- if categoria_slug -%}
+        {{ categoria_activa|capitalize }}{{ '' if categoria_activa == 'MALLA ESLABONADA (NUEVA)' else ' de segunda' }} en Montería | Vélez Depósitos
     {%- elif q -%}
         Búsqueda: {{ q }} | Vélez Depósitos — Montería
     {%- else -%}
@@ -11,23 +12,27 @@
 {% endblock %}
 
 {% block og_titulo %}
-    {%- if categoria_activa -%}
-        {{ categoria_activa }} de segunda mano en Montería | Vélez Depósitos
+    {%- if categoria_slug -%}
+        {{ categoria_activa|capitalize }} en Montería | Vélez Depósitos
     {%- else -%}
         Catálogo de materiales de construcción | Vélez Depósitos — Montería
     {%- endif -%}
 {% endblock %}
 
-{% block og_descripcion %}Compra materiales de demolición y construcción de segunda en Montería. Puertas de hierro, sanitarios, cables de cobre, rejas y más a precios hasta 70% más bajos.{% endblock %}
+{% block og_descripcion %}{{ meta_descripcion or 'Materiales de demolición y construcción de segunda en Montería: puertas de hierro, sanitarios, cables de cobre, rejas y más. Ahorra entre 40% y 70% frente al precio nuevo.' }}{% endblock %}
+
+{% block canonical %}{{ canonical or request.url }}{% endblock %}
 
 {% block head_seo %}
-<meta name="description" content="Catálogo de materiales de construcción de segunda en Montería - Puertas de hierro, sanitarios, lavamanos, lavaplatos, cables, arneses y más. Precios desde $70.000 COP.">
-<meta name="keywords" content="puertas hierro segunda mano, sanitarios usados Montería, lavamanos segunda mano, materiales construcción baratos Córdoba">
+<meta name="description" content="{{ meta_descripcion or 'Catálogo de materiales de construcción de segunda en Montería: puertas de hierro, sanitarios, cables, rejas y malla eslabonada nueva. Ahorra entre 40% y 70% frente al precio nuevo.' }}">
 {% if paginacion.has_next %}
-<link rel="next" href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.next_num) }}">
+<link rel="next" href="{{ url_pagina(paginacion.next_num) }}">
 {% endif %}
 {% if paginacion.has_prev %}
-<link rel="prev" href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.prev_num) }}">
+<link rel="prev" href="{{ url_pagina(paginacion.prev_num) }}">
+{% endif %}
+{% if schema_items %}
+<script type="application/ld+json">{{ schema_items(productos) | tojson }}</script>
 {% endif %}
 {% endblock %}
 
@@ -45,15 +50,15 @@
     <div class="container text-center" style="position:relative;">
 
         <p style="color:#D4AF37; letter-spacing:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:10px;">
-            AHORRA HASTA UN 70% VS PRECIO NUEVO
+            AHORRA ENTRE 40% Y 70% FRENTE AL PRECIO NUEVO
         </p>
 
         <h1 class="fw-bold text-white mb-3" style="font-size:clamp(2rem,5vw,3.2rem); letter-spacing:-1px;">
-            Productos <span style="color:#D4AF37;">Disponibles</span>
+            {% if categoria_slug %}{{ categoria_activa|capitalize }}{% else %}Productos <span style="color:#D4AF37;">Disponibles</span>{% endif %}
         </h1>
 
         <p style="color:rgba(255,255,255,0.6); max-width:540px; margin:0 auto 32px; font-size:1rem; line-height:1.7;">
-            Cada artículo es único en medidas y estado. Consulta disponibilidad antes de visitarnos.
+            Cada artículo es único en medidas y estado.
         </p>
 
         <!-- Buscador -->
@@ -82,7 +87,7 @@
             </div>
             {% if q %}
             <div class="text-center mt-2">
-                <a href="{{ url_for('publicas.productos', categoria=categoria_activa) if categoria_activa else url_for('publicas.productos') }}"
+                <a href="{{ url_for('publicas.categoria', slug=categoria_activa|slugify) if categoria_activa else url_for('publicas.productos') }}"
                    style="color:rgba(212,175,55,0.7); font-size:0.8rem; text-decoration:none;">
                     <i class="bi bi-x-circle me-1"></i>Limpiar búsqueda
                 </a>
@@ -90,55 +95,39 @@
             {% endif %}
         </form>
 
-        <!-- Filtros por grupo -->
-        {% set grupos = [
-            ('🚿 Baños',          ['BAÑOS Y SANITARIOS', 'LAVAPLATOS']),
-            ('🚪 Puertas y Rejas', ['PUERTAS', 'REJAS Y PROTECTORES', 'VENTANAS']),
-            ('🏠 Techos',          ['TECHOS Y CUBIERTAS']),
-            ('⚡ Eléctrico',       ['CABLE ELÉCTRICO', 'GUAYAS EN ALUMINIO', 'GUAYAS EN ACERO', 'HERRAJE ELÉCTRICO', 'TRANSFORMADORES']),
-            ('🔧 Herramienta',     ['HERRAMIENTA Y FERRETERÍA', 'ESCALERAS ESTRUCTURALES', 'ESCALERAS DE ALUMINIO', 'MAQUINARIA Y EQUIPOS']),
-            ('🪟 Tubería',         ['TUBERÍA PVC', 'ACCESORIOS PVC', 'TUBERÍA HIERRO GALVANIZADO']),
-            ('📦 Otros',           ['COCINA', 'HORNOS', 'MALLAS', 'SEGURIDAD Y ALTURA', 'VARIOS']),
-        ] %}
-
+        <!-- Filtros por grupo (los mismos grupos del inicio) -->
         <div class="filtros-wrapper">
 
             <!-- Fila 1: botón Todos + grupos -->
             <div class="filtros-grupos">
                 <a href="{{ url_for('publicas.productos') }}"
-                   class="filtro-grupo-btn{% if not categoria_activa %} fg-activo{% endif %}">
+                   class="filtro-grupo-btn{% if not categoria_activa and not grupo_activo %} fg-activo{% endif %}">
                     Todos
                 </a>
-                {% for nombre_grupo, subcats in grupos %}
-                    {% set idx = loop.index %}
-                    {% set grupo_activo = categoria_activa in subcats %}
-                    <button class="filtro-grupo-btn{% if grupo_activo %} fg-activo fg-expandido{% endif %}"
-                            onclick="toggleGrupo(this, 'subcats-{{ idx }}')"
-                            data-grupo="subcats-{{ idx }}">
-                        {{ nombre_grupo }}
-                        <span class="fg-chevron">▾</span>
+                {% for slug_grupo, nombre_grupo, icono_grupo, subcats in grupos %}
+                    <button class="filtro-grupo-btn{% if grupo_activo == slug_grupo %} fg-activo fg-expandido{% endif %}"
+                            onclick="toggleGrupo(this, 'subcats-{{ slug_grupo }}')"
+                            data-grupo="subcats-{{ slug_grupo }}">
+                        {{ icono(icono_grupo) }} {{ nombre_grupo }}
+                        <span class="fg-chevron">{{ icono('chevron-down', '0.75rem') }}</span>
                     </button>
                 {% endfor %}
             </div>
 
             <!-- Fila 2: subcategorías del grupo activo -->
-            {% for nombre_grupo, subcats in grupos %}
-                {% set idx = loop.index %}
-                {% set grupo_activo = categoria_activa in subcats %}
-                {% set ns = namespace(tiene=false) %}
-                {% for cat in subcats %}{% if cat in categorias %}{% set ns.tiene = true %}{% endif %}{% endfor %}
-                {% if ns.tiene %}
-                <div id="subcats-{{ idx }}" class="filtros-subcats{% if grupo_activo %} fs-visible{% endif %}">
+            {% for slug_grupo, nombre_grupo, icono_grupo, subcats in grupos %}
+                <div id="subcats-{{ slug_grupo }}" class="filtros-subcats{% if grupo_activo == slug_grupo %} fs-visible{% endif %}">
+                    <a href="{{ url_for('publicas.productos', grupo=slug_grupo) }}"
+                       class="filtro-subcat{% if grupo_activo == slug_grupo and not categoria_activa %} fs-activo{% endif %}">
+                        Todo {{ nombre_grupo|lower }}
+                    </a>
                     {% for cat in subcats %}
-                        {% if cat in categorias %}
-                        <a href="{{ url_for('publicas.productos', categoria=cat) }}"
+                        <a href="{{ url_for('publicas.categoria', slug=cat|slugify) }}"
                            class="filtro-subcat{% if categoria_activa == cat %} fs-activo{% endif %}">
                             {{ cat }}
                         </a>
-                        {% endif %}
                     {% endfor %}
                 </div>
-                {% endif %}
             {% endfor %}
 
         </div>
@@ -146,30 +135,18 @@
     </div>
 </div>
 
-<!-- ===== MINI BANNER DE CONFIANZA ===== -->
-<div style="background:#080a0f; border-bottom:1px solid rgba(212,175,55,0.15); padding:18px 0;">
-    <div class="container">
-        <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 text-center">
-            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
-                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Todos los productos revisados
-            </span>
-            <span style="color:rgba(212,175,55,0.3); font-size:1.2rem; display:none;" class="d-none d-md-inline">|</span>
-            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
-                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Listos para instalar
-            </span>
-            <span style="color:rgba(212,175,55,0.3); font-size:1.2rem;" class="d-none d-md-inline">|</span>
-            <span style="color:rgba(255,255,255,0.75); font-size:0.85rem; font-weight:600;">
-                <i class="bi bi-check-circle-fill me-2" style="color:#D4AF37;"></i>Despachos a toda la región
-            </span>
-        </div>
-    </div>
+<!-- ===== AVISO DE PRECIO (una sola vez para todo el catálogo) ===== -->
+<div style="background:#080a0f; border-bottom:1px solid rgba(212,175,55,0.15); padding:16px 0;">
+    <p class="container text-center mb-0" style="color:rgba(255,255,255,0.8); font-size:0.9rem; font-weight:600;">
+        <i class="bi bi-tag-fill me-2" style="color:#D4AF37;"></i>Precio negociable · Consulta disponibilidad
+    </p>
 </div>
 
 <!-- ===== CARDS DE PRODUCTOS ===== -->
 <div style="background:#ffffff; min-height:60vh; padding:50px 0;">
     <div class="container">
         <!-- Contador de resultados -->
-        <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; text-align:center; margin-bottom:24px;">
+        <p style="color:#6c757d; font-size:0.85rem; text-align:center; margin-bottom:24px;">
             {% if q %}
                 <strong style="color:#D4AF37;">{{ total }}</strong>
                 resultado{{ 's' if total != 1 else '' }} para
@@ -194,7 +171,7 @@
                      onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.07)'; this.style.borderColor='#ebebeb';">
 
                     <!-- Link invisible que cubre toda la tarjeta -->
-                    <a href="{{ url_for('publicas.producto_detalle_slug', id=p.id, slug=p.slug) }}"
+                    <a href="{{ url_for('publicas.producto', slug=p.slug) }}"
                        class="stretched-link text-decoration-none" aria-label="{{ p.nombre }}"></a>
 
                     <!-- Imagen del producto -->
@@ -243,18 +220,6 @@
                             <i class="bi bi-circle-fill me-1" style="font-size:0.45rem; vertical-align:middle;"></i>DISPONIBLE
                         </span>
 
-                        <!-- Badge MÁS CONSULTADO (primeros 3 productos) -->
-                        {% if loop.index <= 3 %}
-                        <span style="
-                          position:absolute; bottom:0; left:0; right:0;
-                          background:linear-gradient(135deg,#D4AF37,#f5cc5a);
-                          color:#080a0f;
-                          text-align:center;
-                          padding:6px 12px;
-                          font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
-                            ⭐ Más consultado
-                        </span>
-                        {% endif %}
                     </div>
 
                     <!-- Contenido -->
@@ -272,11 +237,11 @@
                             {{ p.precio_principal() }}
                             <span class="fw-normal" style="color:#aaa; font-size:0.82rem; letter-spacing:0;"> {{ p.precio_sufijo(largo=False) }}</span>
                         </p>
+                        {% if p.unidad_medida in ('M2', 'UNIDAD_VARIABLE') %}
                         <p style="color:#bbb; font-size:0.77rem; margin-bottom:0;">
-                            {% if p.unidad_medida == 'M2' %}Cotiza aquí según medida exacta
-                            {% elif p.unidad_medida == 'UNIDAD_VARIABLE' %}Según medida y grosor
-                            {% else %}Precio negociable · Consulta disponibilidad{% endif %}
+                            {% if p.unidad_medida == 'M2' %}Cotiza aquí según medida exacta{% else %}Según medida y grosor{% endif %}
                         </p>
+                        {% endif %}
                     </div>
 
                     <!-- Botón WhatsApp -->
@@ -303,7 +268,7 @@
                 {% if paginacion.has_prev %}
                 <li class="page-item">
                     <a class="page-link fw-bold"
-                       href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.prev_num) }}"
+                       href="{{ url_pagina(paginacion.prev_num) }}"
                        style="background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4); border-radius:10px; padding:10px 18px;">
                         <i class="bi bi-chevron-left"></i>
                     </a>
@@ -314,7 +279,7 @@
                     {% if num %}
                     <li class="page-item {% if num == paginacion.page %}active{% endif %}">
                         <a class="page-link fw-bold"
-                           href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=num) }}"
+                           href="{{ url_pagina(num) }}"
                            style="{% if num == paginacion.page %}background:#D4AF37; color:#080a0f; border-color:#D4AF37;{% else %}background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4);{% endif %} border-radius:10px; padding:10px 16px;">
                             {{ num }}
                         </a>
@@ -329,7 +294,7 @@
                 {% if paginacion.has_next %}
                 <li class="page-item">
                     <a class="page-link fw-bold"
-                       href="{{ url_for('publicas.productos', q=q, categoria=categoria_activa, page=paginacion.next_num) }}"
+                       href="{{ url_pagina(paginacion.next_num) }}"
                        style="background:#0E1117; color:#D4AF37; border:2px solid rgba(212,175,55,0.4); border-radius:10px; padding:10px 18px;">
                         <i class="bi bi-chevron-right"></i>
                     </a>
@@ -371,8 +336,8 @@
         <div class="row g-4 text-center">
             <div class="col-6 col-md-3">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
-                        🏗️
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; color:#D4AF37;">
+                        {{ icono('building', '1.6rem') }}
                     </div>
                     <span style="color:#fff; font-weight:700; font-size:0.92rem;">+5 años en el mercado</span>
                     <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Experiencia que respalda</span>
@@ -380,29 +345,29 @@
             </div>
             <div class="col-6 col-md-3">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
-                        ⭐
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; color:#D4AF37;">
+                        {{ icono('people-fill', '1.6rem') }}
                     </div>
-                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Clientes en toda la región</span>
-                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Satisfechos con cada compra</span>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Atendemos toda la región</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Montería y municipios cercanos</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
-                        🔍
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; color:#D4AF37;">
+                        {{ icono('search', '1.6rem') }}
                     </div>
-                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Cada producto inspeccionado</span>
-                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Calidad garantizada</span>
+                    <span style="color:#fff; font-weight:700; font-size:0.92rem;">Estado real a la vista</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Confirma medidas y estado antes de comprar</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
-                        📦
+                    <div style="width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center; color:#D4AF37;">
+                        {{ icono('box-seam-fill', '1.6rem') }}
                     </div>
                     <span style="color:#fff; font-weight:700; font-size:0.92rem;">Entrega coordinada</span>
-                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">A tu medida y horario</span>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.78rem; line-height:1.4;">Costo según destino</span>
                 </div>
             </div>
         </div>

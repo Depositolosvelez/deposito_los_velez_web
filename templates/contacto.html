@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_iconos.html" import icono, casilla_datos %}
 
 {% block titulo %}Contacto | Vélez Depósitos y Materiales — Montería{% endblock %}
 {% block og_titulo %}Contacto — Vélez Depósitos y Materiales | Montería{% endblock %}
@@ -41,10 +42,10 @@
             <!-- Dirección -->
             <div class="col-12 col-md-4">
                 <div style="display:flex; align-items:flex-start; gap:18px; padding:24px 28px; border-left:4px solid #D4AF37; background:#fff; border-radius:0 16px 16px 0; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
-                    <span style="font-size:1.8rem; line-height:1; flex-shrink:0;">📍</span>
+                    <span style="line-height:1; flex-shrink:0; color:#D4AF37;">{{ icono('geo-alt-fill', '1.8rem') }}</span>
                     <div>
                         <p class="fw-bold mb-1" style="color:#0E1117; font-size:0.95rem;">Dirección</p>
-                        <p style="color:#555; font-size:0.88rem; margin:0; line-height:1.5;">Montería, Córdoba, Colombia</p>
+                        <p style="color:#555; font-size:0.88rem; margin:0; line-height:1.5;">Barrio Cantaclaro, diagonal a urgencias CAMU Viejo<br>Montería, Córdoba</p>
                     </div>
                 </div>
             </div>
@@ -56,7 +57,7 @@
                     <div style="display:flex; align-items:flex-start; gap:18px; padding:24px 28px; border-left:4px solid #D4AF37; background:#fff; border-radius:0 16px 16px 0; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition:box-shadow 0.3s;"
                          onmouseover="this.style.boxShadow='0 8px 30px rgba(212,175,55,0.2)';"
                          onmouseout="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)';">
-                        <span style="font-size:1.8rem; line-height:1; flex-shrink:0;">📞</span>
+                        <span style="line-height:1; flex-shrink:0; color:#D4AF37;">{{ icono('telephone-fill', '1.8rem') }}</span>
                         <div>
                             <p class="fw-bold mb-1" style="color:#0E1117; font-size:0.95rem;">WhatsApp</p>
                             <p style="color:#D4AF37; font-size:0.88rem; margin:0; font-weight:700;">+57 350 849 4766</p>
@@ -68,7 +69,7 @@
             <!-- Horario -->
             <div class="col-12 col-md-4">
                 <div style="display:flex; align-items:flex-start; gap:18px; padding:24px 28px; border-left:4px solid #D4AF37; background:#fff; border-radius:0 16px 16px 0; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
-                    <span style="font-size:1.8rem; line-height:1; flex-shrink:0;">🕐</span>
+                    <span style="line-height:1; flex-shrink:0; color:#D4AF37;">{{ icono('clock-fill', '1.8rem') }}</span>
                     <div>
                         <p class="fw-bold mb-1" style="color:#0E1117; font-size:0.95rem;">Horario</p>
                         <p style="color:#555; font-size:0.88rem; margin:0; line-height:1.5;">Lunes a Sábado<br>8am – 6pm</p>
@@ -92,7 +93,7 @@
                     Cuéntanos qué necesitas
                 </h2>
                 <p style="color:rgba(255,255,255,0.5); font-size:0.92rem; margin-bottom:32px;">
-                    Te cotizamos sin compromiso y respondemos en menos de 1 hora.
+                    Te cotizamos sin compromiso.
                 </p>
 
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -141,6 +142,8 @@
                         </div>
                     </div>
 
+                    {{ casilla_datos('datos-contacto') }}
+
                     <button type="submit" class="btn w-100 fw-bold"
                             style="background:#25D366; color:#fff; border:none; border-radius:14px; font-size:1rem; padding:15px; transition:all 0.3s; box-shadow:0 6px 20px rgba(37,211,102,0.3);"
                             onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 10px 28px rgba(37,211,102,0.45)'; this.style.transform='translateY(-1px)';"
@@ -148,9 +151,6 @@
                         <i class="bi bi-send-fill me-2" style="font-size:1.1rem;"></i>Enviar consulta
                     </button>
 
-                    <p class="text-center mt-3 mb-0" style="color:rgba(255,255,255,0.3); font-size:0.78rem;">
-                        <i class="bi bi-shield-check me-1"></i>Tu información es confidencial
-                    </p>
                 </form>
             </div>
 
@@ -161,7 +161,7 @@
                     Encuéntranos aquí
                 </h2>
                 <p style="color:rgba(255,255,255,0.5); font-size:0.92rem; margin-bottom:24px;">
-                    Estamos en Montería, Córdoba. Visítanos o coordina una entrega.
+                    Visítanos de Lunes a Sábado, 8am – 6pm, o coordina una entrega.
                 </p>
 
                 <div style="border-radius:20px; overflow:hidden; flex:1; min-height:320px; border:1.5px solid rgba(212,175,55,0.2);">
@@ -173,7 +173,7 @@
 
                 <div style="display:flex; align-items:center; gap:10px; margin-top:16px;">
                     <i class="bi bi-geo-alt-fill" style="color:#D4AF37; font-size:1rem; flex-shrink:0;"></i>
-                    <span style="color:rgba(255,255,255,0.5); font-size:0.85rem;">Montería, Córdoba, Colombia</span>
+                    <span style="color:rgba(255,255,255,0.5); font-size:0.85rem;">Barrio Cantaclaro, diagonal a urgencias CAMU Viejo, Montería</span>
                     <a href="https://maps.google.com/?q=8.73630,-75.86776" target="_blank"
                        class="btn btn-sm fw-bold ms-auto"
                        style="background:rgba(212,175,55,0.1); color:#D4AF37; border:1px solid rgba(212,175,55,0.3); border-radius:8px; font-size:0.78rem;">
@@ -183,26 +183,6 @@
             </div>
 
         </div>
-    </div>
-</div>
-
-<!-- ===== CTA FINAL ===== -->
-<div style="background:#080a0f; padding:55px 0; border-top:3px solid #D4AF37; position:relative; overflow:hidden;">
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%, rgba(212,175,55,0.05) 0%, transparent 70%);pointer-events:none;"></div>
-    <div class="container text-center" style="position:relative;">
-        <i class="bi bi-telephone-fill" style="font-size:2rem; color:#D4AF37; opacity:0.6; margin-bottom:14px; display:block;"></i>
-        <h3 class="fw-bold text-white mb-2">¿Prefieres llamarnos directamente?</h3>
-        <p style="color:rgba(255,255,255,0.5); margin-bottom:28px;">
-            Llámanos o escríbenos por WhatsApp — respondemos rápido.
-        </p>
-        <a href="https://wa.me/573508494766?text=Hola!%20Quisiera%20consultar%20sobre%20sus%20materiales"
-           target="_blank"
-           class="btn fw-bold px-5 py-3"
-           style="background:#25D366; color:#fff; border:none; border-radius:50px; font-size:1rem; transition:all 0.3s; box-shadow:0 6px 20px rgba(37,211,102,0.3);"
-           onmouseover="this.style.background='#1ebe5c'; this.style.boxShadow='0 10px 28px rgba(37,211,102,0.45)';"
-           onmouseout="this.style.background='#25D366'; this.style.boxShadow='0 6px 20px rgba(37,211,102,0.3)';">
-            <i class="bi bi-whatsapp me-2" style="font-size:1.1rem;"></i>Escribir por WhatsApp
-        </a>
     </div>
 </div>
 

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% set preguntas = [
+    ("Envíos", [
+        ("¿Hacen envíos?",
+         "Sí. Coordinamos la entrega en Montería y la región. También puedes retirar tu compra directamente en el depósito, en el Barrio Cantaclaro, diagonal a urgencias CAMU Viejo."),
+        ("¿Cuánto cuesta el envío?",
+         "El costo depende del destino y del tamaño del material. Escríbenos por WhatsApp con el producto y el lugar de entrega y te damos el valor antes de despachar."),
+    ]),
+    ("Pagos", [
+        ("¿Qué medios de pago aceptan?",
+         "Confirma los medios de pago disponibles por WhatsApp al momento de cotizar; te indicamos las opciones antes de cerrar la compra."),
+        ("¿Los precios son negociables?",
+         "Sí. Los precios del catálogo son negociables. Consulta disponibilidad y precio final por WhatsApp."),
+    ]),
+    ("Cambios y estado del material", [
+        ("¿Aceptan cambios o devoluciones?",
+         "Cada artículo se revisa y se muestra en el estado en que se vende. Confirma medidas y estado por WhatsApp antes de comprar."),
+        ("¿El material es nuevo o de segunda?",
+         "Vendemos nuevo y de segunda: la malla eslabonada para cercar es producto nuevo; el resto del inventario es material de segunda, recuperado de demoliciones. Cada ficha indica si el producto es nuevo o de segunda."),
+        ("¿Cómo sé si un producto sigue disponible?",
+         "Cada artículo es único en medidas y estado. Antes de visitarnos, escríbenos por WhatsApp al +57 350 849 4766 y te confirmamos disponibilidad."),
+    ]),
+    ("Horario y ubicación", [
+        ("¿Dónde están y en qué horario atienden?",
+         "Estamos en el Barrio Cantaclaro, diagonal a urgencias CAMU Viejo, Montería, Córdoba. Atendemos de Lunes a Sábado, 8am a 6pm."),
+    ]),
+] %}
+
+{% block titulo %}Preguntas frecuentes: envíos, pagos y cambios | Vélez Depósitos{% endblock %}
+{% block og_titulo %}Preguntas frecuentes | Vélez Depósitos y Materiales{% endblock %}
+{% block og_descripcion %}Envíos en Montería y la región, medios de pago, cambios y estado del material. Resolvemos tus dudas antes de comprar.{% endblock %}
+{% block canonical %}{{ url_for('publicas.preguntas_frecuentes', _external=True) }}{% endblock %}
+
+{% block head_seo %}
+<meta name="description" content="Preguntas frecuentes de Vélez Depósitos y Materiales: envíos en Montería y la región, medios de pago, cambios y estado del material nuevo y de segunda.">
+{% set ns = namespace(items=[]) %}
+{% for _, items in preguntas %}{% for p, r in items %}
+{% set ns.items = ns.items + [{"@type": "Question", "name": p, "acceptedAnswer": {"@type": "Answer", "text": r}}] %}
+{% endfor %}{% endfor %}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": ns.items} | tojson }}</script>
+{% endblock %}
+
+{% block contenido %}
+<section style="background:#080a0f; min-height:80vh; padding:70px 20px;">
+    <div class="container" style="max-width:800px;">
+        <p style="color:#D4AF37; letter-spacing:4px; font-size:0.72rem; font-weight:700; text-transform:uppercase; margin-bottom:10px;">Antes de comprar</p>
+        <h1 class="fw-bold text-white mb-5" style="font-size:clamp(2rem,5vw,2.8rem);">Preguntas frecuentes</h1>
+
+        {% for seccion, items in preguntas %}
+        <h2 style="color:#D4AF37; font-size:1.2rem; font-weight:700; margin:36px 0 14px;">{{ seccion }}</h2>
+        {% for pregunta, respuesta in items %}
+        <details class="faq-item">
+            <summary>{{ pregunta }}</summary>
+            <p>{{ respuesta }}</p>
+        </details>
+        {% endfor %}
+        {% endfor %}
+
+        <div class="text-center" style="margin-top:48px;">
+            <p style="color:rgba(255,255,255,0.6); margin-bottom:18px;">¿Tienes otra pregunta?</p>
+            <a href="https://wa.me/573508494766?text=Hola!%20Tengo%20una%20pregunta"
+               target="_blank" class="btn fw-bold px-5 py-3"
+               style="background:#25D366; color:#fff; border:none; border-radius:50px;">
+                <i class="bi bi-whatsapp me-2"></i>Escríbenos por WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+.faq-item { border:1px solid rgba(212,175,55,0.25); border-radius:14px; margin-bottom:10px; background:#0E1117; }
+.faq-item summary { cursor:pointer; padding:16px 20px; color:#fff; font-weight:600; list-style:none; position:relative; padding-right:44px; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item summary::after { content:"+"; position:absolute; right:20px; top:50%; transform:translateY(-50%); color:#D4AF37; font-size:1.3rem; }
+.faq-item[open] summary::after { content:"−"; }
+.faq-item[open] { border-color:#D4AF37; }
+.faq-item p { color:rgba(255,255,255,0.75); padding:0 20px 18px; margin:0; line-height:1.8; font-size:0.95rem; }
+</style>
+{% endblock %}

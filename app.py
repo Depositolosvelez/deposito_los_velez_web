@@ -78,7 +78,7 @@ def create_app():
         db.session.commit()
 
         # ================= SEED INVENTARIO =================
-        from models import Producto
+        from models import Producto, CATEGORIA_NUEVA
         if Producto.query.count() < 20:
             DESC = "Consultar precio. Material de segunda en buen estado."
             inventario = [
@@ -276,6 +276,7 @@ def create_app():
             "HORNOS":                     "UNIDAD",
             "LAVAPLATOS":                 "UNIDAD",
             "MALLAS":                     "UNIDAD",
+            CATEGORIA_NUEVA:              "UNIDAD",
             "MAQUINARIA Y EQUIPOS":       "UNIDAD",
             "PUERTAS":                    "UNIDAD",   # excepción: puertas de hierro (ver abajo)
             "REJAS Y PROTECTORES":        "M2",
@@ -389,9 +390,19 @@ def create_app():
         for nombre, precio, alto in mallas_cercar:
             if not Producto.query.filter_by(nombre=nombre).first():
                 db.session.add(Producto(
-                    nombre=nombre, precio=precio, categoria="MALLAS", unidad_medida="UNIDAD",
-                    descripcion=f"Malla nueva para cercar de {alto} m de alto. Se vende por rollo de 10 metros.",
+                    nombre=nombre, precio=precio, categoria=CATEGORIA_NUEVA, unidad_medida="UNIDAD",
+                    descripcion=f"Malla eslabonada NUEVA para cercar de {alto} m de alto. Se vende por rollo de 10 metros.",
                 ))
+        db.session.commit()
+
+        # ================= MIGRACIÓN: CATEGORÍA MALLA ESLABONADA (NUEVA) =================
+        # Las mallas de cerca son producto nuevo; el resto del inventario es de segunda.
+        db.session.execute(
+            text("UPDATE productos SET categoria=:cat, "
+                 "descripcion=REPLACE(descripcion, 'Malla nueva para cercar', 'Malla eslabonada NUEVA para cercar') "
+                 "WHERE nombre LIKE 'Malla nueva de cercar%' AND categoria='MALLAS'"),
+            {"cat": CATEGORIA_NUEVA},
+        )
         db.session.commit()
 
     return app

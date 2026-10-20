@@ -1,0 +1,11 @@
+{% macro icono(nombre, tam='1em', estilo='') -%}
+<svg width="{{ tam }}" height="{{ tam }}" fill="currentColor" aria-hidden="true" focusable="false" style="vertical-align:-0.125em;{{ estilo }}"><use href="{{ url_for('static', filename='img/iconos.svg') }}#i-{{ nombre }}"/></svg>
+{%- endmacro %}
+
+{% macro casilla_datos(id, oscuro=true) -%}
+<label for="{{ id }}" style="display:flex;gap:8px;align-items:flex-start;text-align:left;font-size:0.78rem;line-height:1.45;margin-bottom:14px;cursor:pointer;color:{{ 'rgba(255,255,255,0.6)' if oscuro else '#555' }};">
+    <input type="checkbox" id="{{ id }}" name="autoriza_datos" value="si" required style="margin-top:3px;accent-color:#D4AF37;flex-shrink:0;">
+    <span>Autorizo el tratamiento de mis datos personales conforme a la Ley 1581 de 2012 y la
+        <a href="{{ url_for('publicas.privacidad') }}" target="_blank" style="color:#D4AF37;">política de privacidad</a>.</span>
+</label>
+{%- endmacro %}

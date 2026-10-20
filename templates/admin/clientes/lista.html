@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_iconos.html" import icono %}
 
 {% block contenido %}
 <section class="py-5">
@@ -10,13 +11,13 @@
             </h2>
             <div class="d-flex gap-2">
                 <a href="{{ url_for('clientes.estadisticas') }}" class="btn btn-outline-info">
-                    📊 Estadísticas
+                    {{ icono('bar-chart-fill') }} Estadísticas
                 </a>
                 <a href="{{ url_for('clientes.exportar') }}" class="btn btn-outline-success">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar CSV
                 </a>
                 <a href="{{ url_for('clientes.seguimiento') }}" class="btn btn-outline-warning fw-bold">
-                    🔥 Ver seguimiento
+                    {{ icono('fire') }} Ver seguimiento
                 </a>
                 <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-warning fw-bold">
                     <i class="bi bi-plus-lg me-1"></i>Nuevo cliente

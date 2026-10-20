@@ -15,6 +15,35 @@ def slugify(texto):
     return texto.strip('-')
 
 
+CATEGORIA_NUEVA = "MALLA ESLABONADA (NUEVA)"
+
+# Grupos de categorías: los mismos en el inicio y en los filtros del catálogo.
+# (slug, nombre, ícono del sprite, categorías)
+GRUPOS_CATEGORIAS = [
+    ("banos-y-cocina",  "Baños y cocina",       "droplet-fill",          ["BAÑOS Y SANITARIOS", "LAVAPLATOS", "COCINA", "HORNOS"]),
+    ("puertas-y-rejas", "Puertas y rejas",      "door-closed-fill",      ["PUERTAS", "REJAS Y PROTECTORES", "VENTANAS"]),
+    ("techos",          "Techos",               "house-fill",            ["TECHOS Y CUBIERTAS"]),
+    ("electrico",       "Eléctrico",            "lightning-charge-fill", ["CABLE ELÉCTRICO", "GUAYAS EN ALUMINIO", "GUAYAS EN ACERO", "HERRAJE ELÉCTRICO", "TRANSFORMADORES"]),
+    ("tuberia",         "Tubería",              "water",                 ["TUBERÍA PVC", "ACCESORIOS PVC", "TUBERÍA HIERRO GALVANIZADO"]),
+    ("herramienta",     "Herramienta y equipos", "tools",                ["HERRAMIENTA Y FERRETERÍA", "ESCALERAS ESTRUCTURALES", "ESCALERAS DE ALUMINIO", "MAQUINARIA Y EQUIPOS"]),
+    ("seguridad",       "Seguridad y altura",   "shield-fill-check",     ["SEGURIDAD Y ALTURA"]),
+    ("mallas",          "Mallas",               "grid-3x3-gap-fill",     [CATEGORIA_NUEVA, "MALLAS"]),
+    ("varios",          "Varios",               "box-seam-fill",         ["VARIOS"]),
+]
+
+
+def grupos_con(categorias):
+    """Grupos con solo las categorías que existen; las que no están en ningún grupo van a Varios."""
+    agrupadas = {c for *_, cats in GRUPOS_CATEGORIAS for c in cats}
+    sueltas = sorted(c for c in categorias if c not in agrupadas)
+    grupos = []
+    for slug, nombre, icono, cats in GRUPOS_CATEGORIAS:
+        presentes = [c for c in cats if c in categorias] + (sueltas if slug == "varios" else [])
+        if presentes:
+            grupos.append((slug, nombre, icono, presentes))
+    return grupos
+
+
 class Producto(db.Model):
     __tablename__ = "productos"
     __table_args__ = (
@@ -42,6 +71,19 @@ class Producto(db.Model):
     @property
     def slug(self):
         return slugify(self.nombre)
+
+    @property
+    def es_nuevo(self):
+        nombre = self.nombre.lower()
+        return self.categoria == CATEGORIA_NUEVA or " nueva" in nombre or " nuevo" in nombre
+
+    @property
+    def descripcion_corta(self):
+        """Descripción para meta tags: condición, precio y texto del producto."""
+        condicion = "nuevo" if self.es_nuevo else "de segunda"
+        precio = "precio a consultar" if not self.precio else f"{self.precio_principal()} {self.precio_sufijo(largo=False)}"
+        texto = f"{self.nombre} {condicion} en Montería, {precio}. {self.descripcion or ''}".strip()
+        return texto if len(texto) <= 158 else texto[:155].rsplit(" ", 1)[0] + "…"
 
     def __repr__(self):
         return f"<Producto {self.nombre}>"

@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block titulo %}{{ producto.nombre }} | Vélez Depósitos — Montería{% endblock %}
+{% block titulo %}{{ producto.nombre }} en Montería | Vélez Depósitos{% endblock %}
 
 {% block head_seo %}
-<meta name="description" content="{{ producto.nombre }} de segunda mano en Montería, Córdoba. {{ producto.descripcion[:120] if producto.descripcion else 'Material de construcción revisado y disponible.' }} Consulta por WhatsApp.">
+<meta name="description" content="{{ producto.descripcion_corta }}">
 {% endblock %}
 
 {% block og_type %}product{% endblock %}
 {% block og_titulo %}{{ producto.nombre }} | Vélez Depósitos y Materiales{% endblock %}
-{% block og_descripcion %}{{ producto.descripcion[:160] if producto.descripcion else producto.nombre + ' de segunda mano en Montería. Consulta disponibilidad por WhatsApp.' }}{% endblock %}
+{% block og_descripcion %}{{ producto.descripcion_corta }}{% endblock %}
 {% set foto_og = producto.foto if producto.foto and producto.foto.startswith('http') else (request.host_url + 'static/img/logo_amarillo.png') %}
 {% block og_imagen %}{{ foto_og }}{% endblock %}
-{% block canonical %}{{ url_for('publicas.producto_detalle_slug', id=producto.id, slug=producto.slug, _external=True) }}{% endblock %}
+{% block canonical %}{{ url_for('publicas.producto', slug=producto.slug, _external=True) }}{% endblock %}
 
 {% block conversion_event %}
 <script>
@@ -28,36 +28,18 @@ fbq('track', 'ViewContent', {
 
 {% block contenido %}
 
-<!-- Schema.org Product -->
-<script type="application/ld+json">
-{
+<!-- Schema.org Product + migas de pan -->
+<script type="application/ld+json">{{ schema | tojson }}</script>
+<script type="application/ld+json">{{ {
   "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "{{ producto.nombre }}",
-  "description": "{{ producto.descripcion | replace('"', '\\"') if producto.descripcion else producto.nombre + ' de segunda mano en Monteria.' }}",
-  "category": "{{ producto.categoria }}",
-  {% if producto.foto and producto.foto.startswith('http') %}
-  "image": "{{ producto.foto }}",
-  {% else %}
-  "image": "{{ request.host_url }}static/img/logo_amarillo.png",
-  {% endif %}
-  "offers": {
-    "@type": "Offer",
-    "availability": "https://schema.org/InStock",
-    "priceCurrency": "COP",
-    {% if producto.precio > 0 %}
-    "price": "{{ producto.precio | int }}",
-    {% else %}
-    "price": "0",
-    {% endif %}
-    "seller": {
-      "@type": "LocalBusiness",
-      "name": "Velez Depositos y Materiales",
-      "telephone": "+573508494766"
-    }
-  }
-}
-</script>
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": url_for('publicas.index', _external=True)},
+    {"@type": "ListItem", "position": 2, "name": "Productos", "item": url_for('publicas.productos', _external=True)},
+    {"@type": "ListItem", "position": 3, "name": producto.categoria, "item": url_for('publicas.categoria', slug=producto.categoria|slugify, _external=True)},
+    {"@type": "ListItem", "position": 4, "name": producto.nombre}
+  ]
+} | tojson }}</script>
 
 <div style="background:#080a0f; min-height:100vh; padding:40px 0 60px;">
     <div class="container" style="max-width:900px;">
@@ -72,7 +54,7 @@ fbq('track', 'ViewContent', {
                     <a href="{{ url_for('publicas.productos') }}" style="color:#D4AF37; text-decoration:none;">Productos</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}" style="color:#D4AF37; text-decoration:none;">{{ producto.categoria }}</a>
+                    <a href="{{ url_for('publicas.categoria', slug=producto.categoria|slugify) }}" style="color:#D4AF37; text-decoration:none;">{{ producto.categoria }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page" style="color:rgba(255,255,255,0.45);">{{ producto.nombre }}</li>
             </ol>
@@ -107,7 +89,7 @@ fbq('track', 'ViewContent', {
             <div class="col-12 col-md-6">
 
                 <!-- Categoría badge -->
-                <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}"
+                <a href="{{ url_for('publicas.categoria', slug=producto.categoria|slugify) }}"
                    style="display:inline-block; background:#D4AF37; color:#080a0f; padding:4px 16px; border-radius:30px;
                           font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; margin-bottom:16px;">
                     {{ producto.categoria }}
@@ -115,9 +97,18 @@ fbq('track', 'ViewContent', {
 
                 <!-- Nombre -->
                 <h1 style="color:#fff; font-size:clamp(1.6rem,4vw,2.2rem); font-weight:800;
-                           line-height:1.2; margin-bottom:20px;">
+                           line-height:1.2; margin-bottom:12px;">
                     {{ producto.nombre }}
                 </h1>
+
+                <!-- Condición: nuevo o de segunda -->
+                <p style="font-size:0.85rem; font-weight:700; margin-bottom:20px; color:{{ '#22c55e' if producto.es_nuevo else 'rgba(255,255,255,0.6)' }};">
+                    {% if producto.es_nuevo %}
+                    <i class="bi bi-patch-check-fill me-1"></i>Producto nuevo
+                    {% else %}
+                    <i class="bi bi-recycle me-1"></i>Material de segunda · confirma medidas y estado por WhatsApp
+                    {% endif %}
+                </p>
 
                 <!-- Precio -->
                 <p style="color:#D4AF37; font-size:2.4rem; font-weight:800; letter-spacing:-1px; margin-bottom:4px; line-height:1;">
@@ -198,7 +189,7 @@ fbq('track', 'ViewContent', {
 
                 <!-- Volver a categoría -->
                 <div style="margin-top:28px; padding-top:20px; border-top:1px solid rgba(212,175,55,0.15);">
-                    <a href="{{ url_for('publicas.productos', categoria=producto.categoria) }}"
+                    <a href="{{ url_for('publicas.categoria', slug=producto.categoria|slugify) }}"
                        style="color:rgba(212,175,55,0.7); font-size:0.85rem; text-decoration:none; font-weight:600;">
                         <i class="bi bi-arrow-left me-1"></i>Ver más en {{ producto.categoria }}
                     </a>

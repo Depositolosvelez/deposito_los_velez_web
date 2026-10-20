@@ -1,3 +1,4 @@
+{% from "_iconos.html" import icono, casilla_datos %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -60,7 +61,9 @@
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "Vélez Depósitos y Materiales",
-      "description": "Materiales de demolición y construcción de segunda mano en Montería, Córdoba. Puertas de hierro, sanitarios, cables de cobre, rejas y más.",
+      "legalName": "{{ RAZON_SOCIAL }}",
+      "taxID": "{{ NIT }}",
+      "description": "Materiales de demolición y construcción de segunda mano en Montería, Córdoba, y malla eslabonada nueva. Puertas de hierro, sanitarios, cables de cobre, rejas y más.",
       "url": "https://velezdepositos.com.co",
       "telephone": "+573508494766",
       "email": "depositolosvelez@gmail.com",
@@ -94,7 +97,7 @@
 <!-- BARRA SUPERIOR ANUNCIO -->
 <div id="top-bar" style="background:#D4AF37; padding:9px 50px 9px 16px; text-align:center; position:relative;">
     <span style="color:#080a0f; font-size:0.85rem; font-weight:700;">
-        🏗️ Materiales de segunda en Montería &middot; Respondemos en 1 hora
+        {{ icono('cone-striped', estilo='margin-right:6px;') }}Materiales de segunda en Montería &middot; Respondemos en 1 hora
     </span>
     <a href="{{ url_for('publicas.contacto') }}"
        style="background:#080a0f; color:#D4AF37; border-radius:20px; padding:3px 14px; font-size:0.8rem; font-weight:700; text-decoration:none; margin-left:12px; white-space:nowrap;">
@@ -113,7 +116,7 @@
 
         <!-- LOGO -->
         <a class="navbar-brand" href="/">
-            <img src="{{ url_for('static', filename='img/logo_amarillo.png') }}" alt="Vélez Depósitos y Materiales" height="40" width="auto">
+            <img src="{{ url_for('static', filename='img/logo_amarillo.webp') }}" alt="Vélez Depósitos y Materiales" height="40" width="auto">
         </a>
 
         <!-- BOTÓN MÓVIL -->
@@ -141,13 +144,13 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.path.startswith('/admin/clientes/seguimiento') %}active{% endif %}"
                        href="{{ url_for('clientes.seguimiento') }}">
-                        🔥 Seguimiento
+                        {{ icono('fire', estilo='margin-right:4px;') }}Seguimiento
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path.startswith('/admin/clientes/estadisticas') %}active{% endif %}"
                        href="{{ url_for('clientes.estadisticas') }}">
-                        📊 Stats
+                        {{ icono('bar-chart-fill', estilo='margin-right:4px;') }}Stats
                     </a>
                 </li>
                 {% else %}
@@ -155,7 +158,10 @@
                     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Inicio</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path.startswith('/productos') %}active{% endif %}" href="/productos">Productos</a>
+                    <a class="nav-link {% if request.path.startswith('/producto') or request.path.startswith('/categoria') %}active{% endif %}" href="/productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/preguntas-frecuentes' %}active{% endif %}" href="/preguntas-frecuentes">Preguntas frecuentes</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/contacto' %}active{% endif %}" href="/contacto">Contacto</a>
@@ -175,7 +181,9 @@
 <!-- FOOTER -->
 <footer class="bg-dark text-light text-center py-3">
     <small>
-        © 2026 Vélez Depósitos y Materiales · Montería · Despachos a toda la región
+        © 2026 {{ RAZON_SOCIAL }} · NIT {{ NIT }}<br>
+        Barrio Cantaclaro, diagonal a urgencias CAMU Viejo · Montería, Córdoba
+        · <a href="/preguntas-frecuentes" class="text-light text-decoration-none">Preguntas frecuentes</a>
         · <a href="/privacidad" class="text-light text-decoration-none">Política de Privacidad</a>
     </small>
 </footer>
@@ -191,7 +199,7 @@
    id="whatsapp-chat"
    title="Chatear por WhatsApp"
    aria-label="Consultar por WhatsApp">
-    <img src="{{ url_for('static', filename='img/whatsapp_icon.png') }}" alt="WhatsApp" width="60" height="60">
+    <img src="{{ url_for('static', filename='img/whatsapp_icon.webp') }}" alt="WhatsApp" width="60" height="60">
 </a>
 
 <style>
@@ -249,7 +257,8 @@
             <input type="hidden" name="fuente" value="Popup Entrada">
             <input type="hidden" name="mensaje" value="Cotización desde popup de entrada">
             <input type="text" name="nombre" placeholder="Tu nombre" required class="vp-input">
-            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input" style="margin-bottom:18px;">
+            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input">
+            {{ casilla_datos('datos-popup-entrada') }}
             <button type="submit" class="vp-btn-green">Quiero mi cotización gratis</button>
         </form>
     </div>
@@ -271,40 +280,14 @@
             <input type="hidden" name="fuente" value="Popup Salida">
             <input type="hidden" name="mensaje" value="Cotización desde popup de salida (exit intent)">
             <input type="text" name="nombre" placeholder="Tu nombre" required class="vp-input">
-            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input" style="margin-bottom:18px;">
+            <input type="text" name="telefono" placeholder="Tu teléfono o WhatsApp" required class="vp-input">
+            {{ casilla_datos('datos-popup-salida') }}
             <button type="submit" class="vp-btn-gold">Obtener precio ahora</button>
         </form>
     </div>
 </div>
 
-<!-- CHAT FLOTANTE (izquierda) -->
-<div id="chat-widget" style="position:fixed;bottom:25px;left:25px;z-index:1000;">
-    <div id="chat-panel" style="display:none;position:absolute;bottom:60px;left:0;width:290px;background:#0E1117;border:1px solid rgba(212,175,55,0.35);border-radius:16px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <span style="color:#D4AF37;font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">¿En qué te ayudamos?</span>
-            <button onclick="toggleChat()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.2rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
-        </div>
-        <form method="POST" action="{{ url_for('publicas.cotizar') }}">
-            <input type="hidden" name="fuente" value="Chat Flotante">
-            <input type="text" name="nombre" placeholder="Tu nombre" required
-                   style="width:100%;background:#111827;border:1.5px solid rgba(212,175,55,0.2);border-radius:8px;padding:10px 14px;color:#fff;font-size:0.88rem;outline:none;margin-bottom:10px;box-sizing:border-box;">
-            <input type="text" name="telefono" placeholder="Tu WhatsApp" required
-                   style="width:100%;background:#111827;border:1.5px solid rgba(212,175,55,0.2);border-radius:8px;padding:10px 14px;color:#fff;font-size:0.88rem;outline:none;margin-bottom:10px;box-sizing:border-box;">
-            <textarea name="mensaje" placeholder="¿Qué necesitas?" rows="2"
-                      style="width:100%;background:#111827;border:1.5px solid rgba(212,175,55,0.2);border-radius:8px;padding:10px 14px;color:#fff;font-size:0.88rem;outline:none;margin-bottom:12px;box-sizing:border-box;resize:none;"></textarea>
-            <button type="submit"
-                    style="width:100%;background:#25D366;color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;font-size:0.9rem;cursor:pointer;">
-                <i class="bi bi-send-fill me-1"></i>Enviar consulta
-            </button>
-        </form>
-    </div>
-    <button onclick="toggleChat()"
-            style="background:#0E1117;color:#D4AF37;border:2px solid rgba(212,175,55,0.5);border-radius:50px;padding:10px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;">
-        <i class="bi bi-chat-dots-fill" style="font-size:1rem;"></i>¿Te ayudamos?
-    </button>
-</div>
-
-<!-- JS de popups y chat flotante (archivo externo, cacheable) -->
+<!-- JS de popups (archivo externo, cacheable) -->
 <script src="{{ url_for('static', filename='js/popups.js') }}"></script>
 <script>
 ['popup-entrada','popup-salida'].forEach(function(id){
